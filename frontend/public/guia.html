@@ -1,0 +1,506 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Issueflow · Documentación</title><style>body{margin:0;background:#f5f6f0;color:#26392b;font:16px/1.75 Arial,sans-serif}header{background:#203629;color:#e8efdc;padding:32px max(24px,calc((100% - 1000px)/2))}header a{color:inherit}nav{display:flex;gap:18px;flex-wrap:wrap;font-size:13px}main{max-width:1000px;margin:auto;padding:24px}section{padding:25px 0 40px;border-bottom:1px solid #cfd8c8;scroll-margin-top:20px}h1{font-size:32px;letter-spacing:-1px}h2{font-size:23px;margin-top:32px}h3{font-size:18px}a{color:#426b37}pre{background:#e9ede3;padding:18px;border-radius:8px;overflow:auto;font-size:13px}code{font-family:Consolas,monospace}table{border-collapse:collapse;display:block;overflow:auto;font-size:14px}td,th{padding:12px;border:1px solid #cfd8c8;text-align:left}th{background:#e9ede3}li{margin:7px 0}.top{font-size:13px;letter-spacing:1px}footer{padding:30px 24px;text-align:center;font-size:12px;color:#66775e}</style></head><body><header><p class="top">ISSUEFLOW / DOCUMENTACIÓN</p><h1>Del problema a la solución.</h1><nav><a href="/">← Volver a la aplicación</a><a href="#inicio">Inicio rápido</a><a href="#manual">Manual de usuario</a><a href="#arquitectura">Arquitectura</a><a href="#api">API REST</a><a href="#pruebas">Pruebas</a><a href="#presentacion">Cómo presentarlo</a></nav></header><main><section id="inicio"><h1>Issueflow</h1>
+<p>Gestor de incidencias de <strong>Saul Ramos Sanchez</strong>. Permite registrar problemas, asignar responsables, definir prioridades y seguir su resolución.</p>
+<h2>Qué incluye</h2>
+<ul>
+<li>Crear, consultar, editar y eliminar incidencias, con confirmación antes de eliminar.</li>
+<li>Estados: abierta, en progreso y resuelta. Se permite reabrir incidencias.</li>
+<li>Prioridades: baja, media, alta y crítica.</li>
+<li>Búsqueda por título, descripción y responsable; filtros combinados y paginación.</li>
+<li>Indicadores globales por estado y orden por última actualización.</li>
+<li>Validación en frontend y backend; respuestas de error estructuradas.</li>
+<li>Persistencia con H2 en archivo, migraciones Flyway y control de concurrencia optimista.</li>
+<li>Demo independiente con datos ficticios guardados en el navegador.</li>
+</ul>
+<h2>Tecnologías</h2>
+<table>
+<thead>
+<tr>
+<th>Capa</th>
+<th>Implementación</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Interfaz</td>
+<td>React 19, TypeScript, Tailwind CSS 4, componentes shadcn/Base UI</td>
+</tr>
+<tr>
+<td>Servidor de interfaz</td>
+<td>Vinext sobre Vite; proxy HTTP de origen único</td>
+</tr>
+<tr>
+<td>API</td>
+<td>Java 21, Spring Boot 3.5.16, Spring MVC, Bean Validation</td>
+</tr>
+<tr>
+<td>Persistencia</td>
+<td>Spring Data JPA / Hibernate, H2, Flyway</td>
+</tr>
+<tr>
+<td>Pruebas</td>
+<td>JUnit 5, MockMvc, AssertJ; Node Test Runner para la demo</td>
+</tr>
+</tbody></table>
+<p>Spring Boot 3.5 admite Java 21. Consulta los <a href="https://docs.spring.io/spring-boot/3.5/system-requirements.html">requisitos oficiales</a>.</p>
+<h2>Dos formas de ejecutarlo</h2>
+<p><strong>Demo local:</strong> solo requiere el frontend. Usa <code>localStorage</code>, incluye seis ejemplos ficticios y no llama a Java. Sus datos no se comparten entre usuarios y pueden desaparecer si borras los datos del navegador. No ofrece garantías de concurrencia multiusuario.</p>
+<p><strong>Aplicación completa:</strong> el frontend envía las operaciones a Spring Boot, que guarda los datos en una base H2 en disco. Empieza sin incidencias; los ejemplos de la demo no se importan automáticamente. El indicador superior muestra el modo activo.</p>
+<h2>Requisitos</h2>
+<ul>
+<li>Node.js 24 LTS y npm.</li>
+<li>JDK 21 para la API y Maven 3.9.x. <code>JAVA_HOME</code> debe apuntar al directorio del JDK, no a su carpeta <code>bin</code>.</li>
+<li>No necesitas instalar una base de datos para empezar.</li>
+</ul>
+<p>Comprueba <code>node --version</code>, <code>npm --version</code>, <code>java -version</code> y <code>mvn -version</code>.</p>
+<h2>Inicio rápido: aplicación completa en Windows</h2>
+<p>Abre <strong>dos terminales</strong> en la carpeta del proyecto.</p>
+<p>Terminal 1:</p>
+<pre><code class="language-powershell">cd backend
+mvn verify
+java -jar target/issueflow-1.0.0.jar
+</code></pre>
+<p>La API escucha por defecto en <code>http://127.0.0.1:8080</code>. Comprueba <code>http://127.0.0.1:8080/actuator/health</code>.</p>
+<p>Terminal 2:</p>
+<pre><code class="language-powershell">cd frontend
+npm ci
+$env:ISSUEFLOW_API_BASE = &#39;http://127.0.0.1:8080/api&#39;
+npm run dev
+</code></pre>
+<p>Abre la URL que imprime Vite, normalmente <code>http://localhost:3000</code>. Debe aparecer <strong>CONECTADO A SPRING BOOT</strong>. Si cambias la variable, reinicia el frontend.</p>
+<p>Para macOS/Linux, el equivalente es <code>ISSUEFLOW_API_BASE=http://127.0.0.1:8080/api npm run dev</code>.</p>
+<h2>Inicio rápido: demo sin Java</h2>
+<pre><code class="language-powershell">cd frontend
+npm ci
+Remove-Item Env:ISSUEFLOW_API_BASE -ErrorAction SilentlyContinue
+npm run dev
+</code></pre>
+<p>La cabecera debe indicar <strong>DEMO LOCAL</strong>. Puedes restaurar los ejemplos desde el enlace bajo la tabla; se pide confirmación.</p>
+<h2>Validación y compilación</h2>
+<pre><code class="language-powershell"># En backend
+mvn verify
+
+# En frontend
+npm test
+npm run typecheck
+npm run build
+</code></pre>
+<p>La compilación del frontend usa el runtime de Sites/Cloudflare. Para probar ese artefacto localmente utiliza <code>npm run start</code>; para trabajar conectado a Java, el flujo de desarrollo de arriba es el recomendado.</p>
+<h2>Documentación</h2>
+<ul>
+<li><a href="#manual">Manual de usuario</a></li>
+<li><a href="#arquitectura">Arquitectura y decisiones</a></li>
+<li><a href="#api">Contrato de la API</a></li>
+<li><a href="/openapi.json">OpenAPI 3.1 importable</a></li>
+<li><a href="#pruebas">Plan y resultados de pruebas</a></li>
+<li><a href="#presentacion">Guion para presentar el proyecto</a></li>
+</ul>
+<p>El frontend incluye una guía navegable en <code>/guia.html</code> y el contrato descargable en <code>/openapi.json</code>.</p>
+<h2>Estructura</h2>
+<pre><code class="language-text">issueflow/
+  backend/
+    pom.xml
+    src/main/java/com/saul/issueflow/
+    src/main/resources/db/migration/
+    src/test/java/com/saul/issueflow/
+  frontend/
+    app/page.tsx
+    app/api/config/route.ts
+    app/api/backend/[...path]/route.ts
+    lib/issues.ts
+    tests/issues.test.mjs
+    public/
+  docs/
+</code></pre>
+<h2>Configuración y datos</h2>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Valor por defecto</th>
+<th>Uso</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>ISSUEFLOW_API_BASE</code></td>
+<td>Sin definir</td>
+<td>En el frontend; sin valor activa la demo. Con valor apunta a la API Java, incluido <code>/api</code>.</td>
+</tr>
+<tr>
+<td><code>PORT</code></td>
+<td><code>8080</code></td>
+<td>Puerto de Spring Boot.</td>
+</tr>
+<tr>
+<td><code>SERVER_ADDRESS</code></td>
+<td><code>127.0.0.1</code></td>
+<td>Interfaz de escucha de Spring Boot.</td>
+</tr>
+<tr>
+<td><code>DB_URL</code></td>
+<td><code>jdbc:h2:file:./data/issueflow;DB_CLOSE_ON_EXIT=FALSE</code></td>
+<td>Conexión JDBC.</td>
+</tr>
+<tr>
+<td><code>DB_USERNAME</code></td>
+<td><code>sa</code></td>
+<td>Usuario de la base local.</td>
+</tr>
+<tr>
+<td><code>DB_PASSWORD</code></td>
+<td>Vacío</td>
+<td>Contraseña de la base local.</td>
+</tr>
+</tbody></table>
+<p>Los datos están en <code>backend/data/</code> si inicias Java desde <code>backend</code>. Detén la API antes de copiar esa carpeta para hacer una copia de seguridad. No subas datos locales ni contraseñas al repositorio.</p>
+<p>El driver PostgreSQL y su módulo Flyway están incluidos para una futura configuración con <code>DB_URL</code>, <code>DB_USERNAME</code> y <code>DB_PASSWORD</code>; esta entrega se valida con H2. La migración debe probarse contra PostgreSQL antes de usarlo allí.</p>
+<h2>Alcance de esta versión</h2>
+<p>Es un proyecto de portafolio para uso local y demostración. No incluye autenticación, permisos por usuario, adjuntos, notificaciones ni historial de auditoría. El responsable es texto libre, no una cuenta. El backend se limita a loopback de forma predeterminada. Antes de exponerlo como servicio compartido, incorpora autenticación/autorización, HTTPS, límites de uso y operaciones de respaldo.</p>
+<p>La demo alojada no ejecuta la JVM ni demuestra persistencia del backend: muestra la interfaz y sus interacciones. El backend Java completo se entrega en el código fuente y se ejecuta con las instrucciones anteriores.</p>
+<h2>Solución de problemas</h2>
+<ul>
+<li><strong>JAVA_HOME incorrecto:</strong> apunta al JDK instalado; abre otra terminal y verifica <code>mvn -version</code>.</li>
+<li><strong>La API no responde:</strong> revisa la terminal Java y el endpoint de salud. El proxy devuelve un error visible; no cambia silenciosamente a la demo.</li>
+<li><strong>Puerto ocupado:</strong> cambia <code>PORT</code> y ajusta <code>ISSUEFLOW_API_BASE</code>; usa la URL que imprima Vite para el frontend.</li>
+<li><strong>409 al guardar:</strong> otra operación cambió la incidencia. Cierra el formulario, actualiza la tabla y vuelve a abrirla antes de editar.</li>
+<li><strong>Datos de demo ilegibles o almacenamiento bloqueado:</strong> la interfaz informa el error. Restaurar ejemplos reemplaza solo los datos de Issueflow, con confirmación.</li>
+<li><strong>AccessDeniedException de Java dentro de un entorno aislado:</strong> ejecuta <code>mvn verify</code> en tu terminal local normal. No desactives permisos o seguridad global del equipo.</li>
+</ul>
+<h2>JAR listo para ejecutar</h2>
+<p>El ZIP de entrega incluye <code>backend/bin/issueflow-1.0.0.jar</code>, compilado a partir de este backend y verificado mediante HTTP. Puedes iniciarlo con <code>java -jar bin/issueflow-1.0.0.jar</code> desde <code>backend/</code> si quieres probarlo antes de recompilar el código. Para desarrollar, usa el código fuente y los comandos Maven de esta guía.</p>
+</section><section id="manual"><h1>Manual de usuario</h1>
+<h2>Registrar una incidencia</h2>
+<ol>
+<li>Selecciona <strong>Nueva incidencia</strong>.</li>
+<li>Escribe un título de entre 3 y 120 caracteres.</li>
+<li>Añade contexto, pasos para reproducir el problema y el resultado esperado en la descripción (hasta 4000 caracteres).</li>
+<li>Define estado, prioridad y responsable. El responsable es opcional y admite 80 caracteres.</li>
+<li>Selecciona <strong>Crear incidencia</strong>. Aparece una confirmación y se actualizan la tabla y los indicadores.</li>
+</ol>
+<p>Si falla el guardado, el formulario conserva lo escrito y muestra el motivo. Los botones se deshabilitan mientras se procesa la operación.</p>
+<h2>Consultar y filtrar</h2>
+<p>La búsqueda consulta título, descripción y responsable, sin distinguir mayúsculas. Se puede combinar con estado y prioridad. Las coincidencias de acentos son literales. El buscador no busca por número de incidencia.</p>
+<p>La tabla muestra ocho registros por página y ordena por última actualización, del más reciente al más antiguo. Los indicadores superiores siempre representan el total global, no solo los resultados filtrados.</p>
+<h2>Editar y resolver</h2>
+<p>Selecciona el título para abrir el detalle y después <strong>Editar</strong>. Cambia el estado a <strong>En progreso</strong> al iniciar la atención, o a <strong>Resuelta</strong> al terminar. También puedes volver a <strong>Abierta</strong> si el problema reaparece. La versión actual no restringe las transiciones.</p>
+<p>El estado y la prioridad no son equivalentes: una incidencia puede seguir abierta con prioridad baja, o estar en progreso con prioridad crítica.</p>
+<h2>Eliminar</h2>
+<p>En el detalle selecciona <strong>Eliminar</strong> y confirma. La eliminación es permanente. Si cambió la versión desde que abriste el detalle, actualiza el registro antes de intentarlo otra vez.</p>
+<h2>Modos y persistencia</h2>
+<ul>
+<li><strong>DEMO LOCAL:</strong> datos ficticios en este navegador. No se envían a Java ni a otros visitantes. Restaurar ejemplos reemplaza todos los datos de la demo, previa confirmación.</li>
+<li><strong>CONECTADO A SPRING BOOT:</strong> datos en el backend y su base de datos. La demo y la API tienen registros independientes.</li>
+</ul>
+<p>Las fechas se muestran en UTC para mantener un criterio consistente. La interfaz se adapta a pantallas pequeñas; la tabla se puede desplazar horizontalmente. Los formularios y diálogos ofrecen etiquetas y acciones accesibles por teclado.</p>
+</section><section id="arquitectura"><h1>Arquitectura y decisiones</h1>
+<h2>Flujo completo</h2>
+<pre><code class="language-mermaid">flowchart LR
+  A[React / TypeScript] --&gt; B[Proxy HTTP de Vinext]
+  B --&gt; C[Spring MVC / DTOs]
+  C --&gt; D[Servicio transaccional]
+  D --&gt; E[Spring Data JPA]
+  E --&gt; F[(H2 en archivo)]
+  G[Flyway] --&gt; F
+</code></pre>
+<p>En modo demo, React utiliza un adaptador de <code>localStorage</code> y no recorre este flujo. Ambos modos usan el mismo modelo y validaciones de la interfaz.</p>
+<h2>Por qué esta estructura</h2>
+<ul>
+<li><strong>Un monolito backend pequeño:</strong> una sola entidad y un dominio acotado no justifican microservicios. La separación controlador/servicio/repositorio permite evolucionar sin introducir infraestructura innecesaria.</li>
+<li><strong>DTOs de entrada y salida:</strong> los clientes no asignan <code>id</code>, fechas o versiones nuevas directamente a la entidad. El servicio controla los cambios.</li>
+<li><strong>H2 en archivo:</strong> arranque reproducible sin depender de una base instalada. La persistencia sobrevive al reinicio del proceso.</li>
+<li><strong>Flyway y <code>ddl-auto: validate</code>:</strong> el esquema está versionado y Hibernate comprueba que coincida; no altera tablas automáticamente.</li>
+<li><strong>Proxy de origen único:</strong> el navegador llama a su propio servidor y no necesita CORS abierto. La URL Java se configura en el servidor, no en un campo editable por el visitante.</li>
+<li><strong>Control optimista:</strong> <code>@Version</code> y el parámetro de versión evitan sobrescribir cambios obsoletos en actualización y eliminación.</li>
+</ul>
+<h2>Responsabilidades</h2>
+<table>
+<thead>
+<tr>
+<th>Componente</th>
+<th>Responsabilidad</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>IssueController</code></td>
+<td>Rutas, validación de parámetros y códigos HTTP.</td>
+</tr>
+<tr>
+<td><code>IssueService</code></td>
+<td>Transacciones, reglas de actualización, consultas, estadísticas.</td>
+</tr>
+<tr>
+<td><code>IssueRepository</code></td>
+<td>Persistencia y especificaciones JPA.</td>
+</tr>
+<tr>
+<td><code>IssueRequest</code></td>
+<td>Validación y normalización de texto.</td>
+</tr>
+<tr>
+<td><code>IssueResponse</code></td>
+<td>Contrato estable de salida.</td>
+</tr>
+<tr>
+<td><code>ApiExceptionHandler</code></td>
+<td>Errores Problem Details y conflictos.</td>
+</tr>
+<tr>
+<td><code>lib/issues.ts</code></td>
+<td>Tipos y validación del frontend, adaptador de demo y cliente HTTP.</td>
+</tr>
+<tr>
+<td><code>app/page.tsx</code></td>
+<td>Estado visual, formularios, filtros y diálogos.</td>
+</tr>
+<tr>
+<td><code>app/api/backend/[...path]</code></td>
+<td>Proxy a rutas permitidas de la API, sin redirecciones y con timeout.</td>
+</tr>
+</tbody></table>
+<h2>Modelo de datos</h2>
+<p><code>issues</code>: identificador numérico, versión, título, descripción, estado, prioridad, responsable, creación y última actualización.</p>
+<p>Los estados y prioridades son enums en Java y tipos restringidos en TypeScript. La base incluye restricciones <code>CHECK</code>. Hay índices por estado/prioridad y por fecha/ID. Las consultas usan parámetros JPA; <code>%</code> y <code>_</code> se tratan como caracteres literales en la búsqueda.</p>
+<p>La lista se pagina en el servidor. Las estadísticas son globales. El primer criterio de ordenación es <code>updatedAt DESC</code>; el ID desempata, haciendo estable el orden.</p>
+<h2>Errores y concurrencia</h2>
+<p>Una actualización incluye la versión que leyó el cliente. Si difiere, la API responde 409 y no aplica los cambios. También se comprueba la versión al eliminar. La columna JPA protege frente a una modificación concurrente ocurrida después de la comprobación del servicio.</p>
+<p>La demo realiza una comprobación básica de versión al leer/escribir. <code>localStorage</code> no proporciona transacciones entre pestañas: la demo no sustituye las garantías de concurrencia de la API.</p>
+<p>Las peticiones de listado se cancelan al cambiar filtros para evitar que una respuesta antigua reemplace resultados recientes. Los errores de almacenamiento no provocan un borrado automático.</p>
+<h2>Límites conocidos</h2>
+<ul>
+<li>Sin autenticación ni autorización; despliegue Java pensado para desarrollo local.</li>
+<li>Sin auditoría histórica ni relaciones entre usuarios e incidencias.</li>
+<li>La búsqueda usa <code>LIKE</code>; para gran volumen se evaluaría búsqueda indexada específica del motor.</li>
+<li>Cuatro consultas calculan las estadísticas; no representan una instantánea atómica si hay cambios simultáneos.</li>
+<li>No se ejecutaron pruebas de carga ni de PostgreSQL.</li>
+<li>Herramienta WebMCP opcional: <code>start_issue_creation</code> prepara el formulario; no guarda datos. Su disponibilidad depende del navegador.</li>
+</ul>
+<h2>Evolución propuesta</h2>
+<p>Autenticación y roles, catálogo de usuarios, historial de cambios, PostgreSQL validado, observabilidad, contenedores y CI. Cada incorporación debe resolver una necesidad concreta, con sus pruebas correspondientes.</p>
+</section><section id="api"><h1>API de Issueflow</h1>
+<p>Base local: <code>http://127.0.0.1:8080/api</code>. JSON UTF-8. La API no usa autenticación en esta versión local.</p>
+<h2>Endpoints</h2>
+<table>
+<thead>
+<tr>
+<th>Método</th>
+<th>Ruta</th>
+<th>Resultado</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>GET</td>
+<td><code>/issues</code></td>
+<td>Lista paginada, 200.</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/issues/{id}</code></td>
+<td>Detalle, 200 o 404.</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/issues</code></td>
+<td>Crea, 201 con cabecera <code>Location</code>.</td>
+</tr>
+<tr>
+<td>PUT</td>
+<td><code>/issues/{id}</code></td>
+<td>Reemplaza campos editables, 200; requiere versión.</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td><code>/issues/{id}?version=0</code></td>
+<td>Elimina, 204; requiere versión.</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/stats</code></td>
+<td>Totales globales, 200.</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/actuator/health</code></td>
+<td>Salud; ruta fuera del prefijo <code>/api</code>.</td>
+</tr>
+</tbody></table>
+<h2>Lista</h2>
+<p>Parámetros opcionales: <code>q</code> (hasta 120 caracteres), <code>status</code>, <code>priority</code>, <code>page</code> (desde 0), <code>size</code> (1–100; por defecto 10). Estados: <code>OPEN</code>, <code>IN_PROGRESS</code>, <code>RESOLVED</code>. Prioridades: <code>LOW</code>, <code>MEDIUM</code>, <code>HIGH</code>, <code>CRITICAL</code>.</p>
+<pre><code class="language-text">GET /api/issues?q=reporte&amp;status=OPEN&amp;priority=HIGH&amp;page=0&amp;size=8
+</code></pre>
+<pre><code class="language-json">{
+  &quot;content&quot;: [],
+  &quot;page&quot;: 0,
+  &quot;size&quot;: 8,
+  &quot;totalElements&quot;: 0,
+  &quot;totalPages&quot;: 0
+}
+</code></pre>
+<h2>Crear</h2>
+<pre><code class="language-json">{
+  &quot;title&quot;: &quot;Error al generar el reporte&quot;,
+  &quot;description&quot;: &quot;Al seleccionar Descargar, la solicitud devuelve un error.&quot;,
+  &quot;status&quot;: &quot;OPEN&quot;,
+  &quot;priority&quot;: &quot;HIGH&quot;,
+  &quot;assignee&quot;: &quot;Saul Ramos&quot;
+}
+</code></pre>
+<p>Todos esos campos deben estar presentes. Descripción y responsable pueden ser cadenas vacías. Se recortan espacios exteriores antes de validar. El título admite 3–120 caracteres, descripción 4000 y responsable 80. <code>id</code>, fechas y versión inicial son generados por el servidor.</p>
+<h2>Actualizar</h2>
+<p>Envía los mismos campos e incluye <code>version</code> con el valor de la última lectura. No sumes la versión en el cliente.</p>
+<pre><code class="language-json">{
+  &quot;title&quot;: &quot;Error al generar el reporte&quot;,
+  &quot;description&quot;: &quot;Se corrigió la validación y se verificó la descarga.&quot;,
+  &quot;status&quot;: &quot;RESOLVED&quot;,
+  &quot;priority&quot;: &quot;HIGH&quot;,
+  &quot;assignee&quot;: &quot;Saul Ramos&quot;,
+  &quot;version&quot;: 0
+}
+</code></pre>
+<p>La respuesta incluye <code>id</code>, <code>version</code>, todos los campos editables y fechas ISO-8601 UTC. La versión aumenta cuando se modifica la entidad; un reemplazo idéntico puede conservarla.</p>
+<h2>Ejemplo en PowerShell</h2>
+<pre><code class="language-powershell">$base = &#39;http://127.0.0.1:8080/api&#39;
+$body = @{
+  title = &#39;Error al generar el reporte&#39;
+  description = &#39;La descarga no se inicia.&#39;
+  status = &#39;OPEN&#39;
+  priority = &#39;HIGH&#39;
+  assignee = &#39;Saul Ramos&#39;
+} | ConvertTo-Json
+$issue = Invoke-RestMethod &quot;$base/issues&quot; -Method Post -ContentType &#39;application/json; charset=utf-8&#39; -Body ([Text.Encoding]::UTF8.GetBytes($body))
+Invoke-RestMethod &quot;$base/issues/$($issue.id)&quot;
+Invoke-RestMethod &quot;$base/stats&quot;
+# Cuando quieras eliminar el registro creado en este ejemplo:
+Invoke-RestMethod &quot;$base/issues/$($issue.id)?version=$($issue.version)&quot; -Method Delete
+</code></pre>
+<h2>Errores</h2>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Causa</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>400</td>
+<td>Validación, enum desconocido, JSON inválido, paginación inválida o versión ausente.</td>
+</tr>
+<tr>
+<td>404</td>
+<td>ID inexistente.</td>
+</tr>
+<tr>
+<td>409</td>
+<td>Versión obsoleta o modificación concurrente.</td>
+</tr>
+<tr>
+<td>502</td>
+<td>Solo el proxy frontend: backend inaccesible o timeout.</td>
+</tr>
+<tr>
+<td>503</td>
+<td>Solo el proxy frontend: API Java no configurada en modo demo.</td>
+</tr>
+</tbody></table>
+<pre><code class="language-json">{
+  &quot;type&quot;: &quot;about:blank&quot;,
+  &quot;title&quot;: &quot;Bad Request&quot;,
+  &quot;status&quot;: 400,
+  &quot;detail&quot;: &quot;Revisa los campos de la incidencia.&quot;,
+  &quot;errors&quot;: { &quot;title&quot;: &quot;size must be between 3 and 120&quot; }
+}
+</code></pre>
+<p>El mapa <code>errors</code> corresponde a la validación del cuerpo. Los mensajes de Bean Validation pueden depender del idioma del entorno. No se devuelven trazas de excepción.</p>
+<p>El contrato <a href="/openapi.json">openapi.json</a> se puede importar en Postman o en un visor compatible con OpenAPI 3.1.</p>
+</section><section id="pruebas"><h1>Pruebas y verificación</h1>
+<h2>Resultado de esta entrega</h2>
+<ul>
+<li><strong>Backend:</strong> 9 pruebas JUnit/MockMvc ejecutadas correctamente con H2 en memoria y migración Flyway.</li>
+<li><strong>Demo:</strong> 6 pruebas con Node Test Runner aprobadas.</li>
+<li><strong>TypeScript:</strong> comprobación estática aprobada.</li>
+<li><strong>Integración HTTP real:</strong> creación, búsqueda/filtros, validación, control de origen del proxy, actualización, conflicto de versión y eliminación verificados a través del servidor frontend conectado a Spring Boot.</li>
+<li><strong>Persistencia:</strong> se creó una incidencia, se reinició Java, se comprobó que conservaba sus datos y versión, y se eliminó el registro de prueba.</li>
+</ul>
+<p>El entorno aislado de Windows presentó <code>AccessDeniedException</code> en la resolución de rutas de Java y al cerrar archivos ZIP del compilador. Se pudo generar el JAR y ejecutar la aplicación. Las nueve pruebas se ejecutaron mediante JUnit Console sobre las clases compiladas; no se presenta <code>mvn verify</code> como aprobado en ese entorno. La ejecución alternativa terminó con 9/9 pruebas exitosas y un aviso del cargador de clases durante el cierre del contexto. En un entorno normal el comando previsto sigue siendo <code>mvn verify</code>.</p>
+<h2>Cobertura de los casos</h2>
+<table>
+<thead>
+<tr>
+<th>Área</th>
+<th>Casos</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CRUD API</td>
+<td>Creación, detalle, actualización, eliminación, ID inexistente.</td>
+</tr>
+<tr>
+<td>Validaciones</td>
+<td>Título vacío/corto, descripción larga, enum inválido, paginación inválida.</td>
+</tr>
+<tr>
+<td>Consultas</td>
+<td>Búsqueda sin distinguir mayúsculas, <code>%</code> literal, prioridad y estado, paginación.</td>
+</tr>
+<tr>
+<td>Concurrencia</td>
+<td>Versión obligatoria y rechazo de cambios/eliminaciones obsoletos.</td>
+</tr>
+<tr>
+<td>Estadísticas</td>
+<td>Totales después de resolver y eliminar.</td>
+</tr>
+<tr>
+<td>Salud</td>
+<td>Endpoint disponible sin detalles internos.</td>
+</tr>
+<tr>
+<td>Demo</td>
+<td>CRUD persistido, versiones, filtros, datos corruptos, lista vacía, validación.</td>
+</tr>
+</tbody></table>
+<h2>Cómo repetirlas</h2>
+<pre><code class="language-powershell"># backend/
+mvn verify
+
+# frontend/
+npm test
+npm run typecheck
+npm run build
+</code></pre>
+<h2>Recorrido manual recomendado</h2>
+<ol>
+<li>Crear una incidencia y confirmar que aparece.</li>
+<li>Recargar y comprobar persistencia según el modo.</li>
+<li>Filtrar por prioridad y buscar por responsable.</li>
+<li>Editar el estado a resuelta y comprobar los indicadores.</li>
+<li>Cancelar una eliminación; después confirmar otra.</li>
+<li>En modo Java, detener la API y comprobar el mensaje de conexión.</li>
+<li>Revisar el flujo por teclado y en una pantalla móvil.</li>
+</ol>
+<h2>Límites de validación</h2>
+<p>No se ejecutaron pruebas visuales automatizadas en navegador, pruebas de carga, auditoría de accesibilidad ni pruebas contra PostgreSQL. No había un contexto WebMCP compatible disponible para validar su registro en navegador; la herramienta opcional no es necesaria para usar la aplicación.</p>
+<p>La demo y el backend son implementaciones de persistencia diferentes: una prueba de <code>localStorage</code> no se considera una prueba de Java o de la base de datos.</p>
+</section><section id="presentacion"><h1>Cómo presentar Issueflow en una entrevista</h1>
+<h2>Resumen de 30 segundos</h2>
+<p>«Issueflow es un gestor de incidencias que desarrollé con React y TypeScript en la interfaz, y Java con Spring Boot en el backend. Implementé CRUD, filtros, paginación, validación y persistencia con migraciones. También contemplé conflictos de edición mediante versiones optimistas y pruebas de la API.»</p>
+<h2>Demostración de cinco minutos</h2>
+<ol>
+<li>Aclara si muestras la demo de navegador o la aplicación conectada a Java.</li>
+<li>Crea una incidencia con prioridad alta y responsable.</li>
+<li>Encuéntrala con el buscador y el filtro de prioridad.</li>
+<li>Ábrela, cambia su estado y explica cómo se actualizan los indicadores.</li>
+<li>Muestra un error de validación y la confirmación de eliminación.</li>
+<li>Abre el contrato OpenAPI y explica la respuesta 409.</li>
+</ol>
+<h2>Decisiones que puedes defender</h2>
+<ul>
+<li>Un solo servicio es suficiente para este alcance; no lo presentes como arquitectura de microservicios.</li>
+<li>Los DTOs separan el contrato de la entidad de persistencia.</li>
+<li>Flyway mantiene el esquema reproducible.</li>
+<li>La validación del frontend ayuda al usuario, pero la del backend es la autoridad.</li>
+<li><code>@Version</code> protege frente a cambios perdidos entre clientes.</li>
+<li>Una demo local facilita explorar la interfaz, pero no prueba por sí misma la ejecución del backend.</li>
+</ul>
+<h2>Qué estudiar en el código</h2>
+<p>Sigue una creación desde el formulario hasta <code>IssueController</code>, <code>IssueService</code>, <code>IssueRepository</code> y la tabla SQL. Después reproduce una edición obsoleta para entender la concurrencia optimista. Usa las pruebas como ejemplos ejecutables, y adapta este guion a lo que puedas explicar con seguridad.</p>
+<h2>Siguiente entrega razonable</h2>
+<p>Añadir autenticación y responsables reales, validar PostgreSQL y automatizar las comprobaciones en CI. Evita afirmar que esas capacidades ya están implementadas.</p>
+</section></main><footer>Saul Ramos Sanchez · Issueflow 1.0</footer></body></html>

@@ -1,0 +1,17 @@
+**/node_modules/
+**/target/
+**/dist/
+**/.wrangler/
+**/.vinext/
+**/data/
+**/.env*
+!**/.env.example
+*.log
+.idea/
+.vscode/
+
+# Generated local files
+**/*.tsbuildinfo
+**/.next/
+**/bin/*.jar
+!**/.env.example
