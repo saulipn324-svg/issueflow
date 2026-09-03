@@ -4,7 +4,11 @@ Gestor de incidencias de **Saul Ramos Sanchez**. Permite registrar problemas, as
 
 ## Ejecutar con Docker
 
-El entorno local con PostgreSQL y Docker Compose está preparado. Consulta [Docker y PostgreSQL](docs/docker.md) para configurar las contraseñas, arrancar los tres servicios y ejecutar las pruebas contra PostgreSQL. La validación con Docker está pendiente de su instalación en este equipo.
+El entorno local con PostgreSQL y Docker Compose está preparado. Consulta [Docker y PostgreSQL](docs/docker.md) para configurar las contraseñas, arrancar los tres servicios y ejecutar las pruebas contra PostgreSQL. El arranque, acceso por roles y persistencia tras reiniciar fueron verificados en Docker Desktop; las 9 pruebas PostgreSQL terminaron sin fallos.
+
+## Integración continua
+
+[GitHub Actions](https://github.com/saulipn324-svg/issueflow/actions) ejecuta pruebas Java/PostgreSQL, pruebas de frontend, comprobación de tipos y compilación. Consulta [el flujo CI](docs/ci.md) para ver activadores y resultados.
 
 ## Qué incluye
 
@@ -124,6 +128,7 @@ La compilación del frontend usa el runtime de Sites/Cloudflare. Para probar ese
 
 ## Documentación
 
+- [Integración continua](docs/ci.md)
 - [Docker y PostgreSQL](docs/docker.md)
 - [Seguridad y roles](docs/seguridad.md)
 - [Manual de usuario](docs/manual.md)
@@ -167,7 +172,7 @@ issueflow/
 
 Los datos están en `backend/data/` si inicias Java desde `backend`. Detén la API antes de copiar esa carpeta para hacer una copia de seguridad. No subas datos locales ni contraseñas al repositorio.
 
-Compose configura PostgreSQL, su driver y Flyway. El perfil `mvn -Ppostgres verify` prueba la migración y el contrato con Testcontainers; su ejecución está pendiente de Docker. H2 sigue disponible para el modo local sin contenedores.
+Compose configura PostgreSQL, su driver y Flyway. El perfil `mvn -Ppostgres verify` prueba la migración y el contrato con Testcontainers; su ejecución terminó con 9 pruebas aprobadas y `BUILD SUCCESS`. H2 sigue disponible para el modo local sin contenedores.
 
 ## Alcance de esta versión
 

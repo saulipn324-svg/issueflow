@@ -73,6 +73,6 @@ Las imágenes fijan familias de versiones, pero sus etiquetas reciben actualizac
 
 ## Estado de verificación
 
-Los Dockerfiles, Compose y el perfil PostgreSQL están preparados. La ejecución en contenedores y los nueve casos PostgreSQL están pendientes de disponer de Docker Desktop en el equipo. Las pruebas H2, seguridad e integración HTTP de la versión anterior sí se ejecutaron. No se afirma que PostgreSQL esté validado hasta completar `mvn -Ppostgres verify` y el arranque de Compose.
+Validado en Docker Desktop por Saul: frontend, backend y PostgreSQL saludables; acceso, roles, cierre de sesión, persistencia tras reiniciar los tres servicios y eliminación por administrador aprobados. El perfil `mvn -Ppostgres verify` completó 9 pruebas PostgreSQL sin fallos, errores ni omisiones y terminó con `BUILD SUCCESS`. Estos resultados proceden de las salidas de ejecución compartidas por el usuario.
 
 Referencias: [orden de arranque de Compose](https://docs.docker.com/compose/how-tos/startup-order/) e [imagen oficial PostgreSQL](https://hub.docker.com/_/postgres).

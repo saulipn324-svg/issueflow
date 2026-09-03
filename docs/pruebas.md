@@ -3,6 +3,8 @@
 ## Resultado de esta entrega
 
 - **Backend:** 14 pruebas JUnit/MockMvc ejecutadas correctamente con H2 en memoria y migración Flyway.
+- **PostgreSQL:** 9 pruebas PostgresIT aprobadas, 0 fallos, 0 errores y 0 omitidas; `mvn -Ppostgres verify` terminó con `BUILD SUCCESS`, según la salida compartida por Saul el 2 de septiembre de 2026.
+- **Docker Compose:** los tres servicios quedaron saludables; el script verificó login, roles, cierre de sesión, persistencia tras reinicio y eliminación por ADMIN. Saul confirmó además el acceso con ambas cuentas.
 - **Demo:** 6 pruebas con Node Test Runner aprobadas.
 - **TypeScript:** comprobación estática aprobada.
 - **Integración HTTP real:** creación, búsqueda/filtros, validación, control de origen del proxy, actualización, conflicto de versión y eliminación verificados a través del servidor frontend conectado a Spring Boot.
@@ -46,7 +48,7 @@ npm run build
 
 ## Límites de validación
 
-No se ejecutaron pruebas visuales automatizadas en navegador, pruebas de carga, auditoría de accesibilidad ni pruebas contra PostgreSQL. No había un contexto WebMCP compatible disponible para validar su registro en navegador; la herramienta opcional no es necesaria para usar la aplicación.
+No se ejecutaron pruebas visuales automatizadas en navegador, pruebas de carga, auditoría de accesibilidad . No había un contexto WebMCP compatible disponible para validar su registro en navegador; la herramienta opcional no es necesaria para usar la aplicación.
 
 La demo y el backend son implementaciones de persistencia diferentes: una prueba de `localStorage` no se considera una prueba de Java o de la base de datos.
 
@@ -56,4 +58,8 @@ Se ejecutaron cinco pruebas adicionales de Spring Security: rechazo anónimo, co
 
 ## Docker y PostgreSQL
 
-Se añadieron Dockerfiles, Compose con healthchecks y volumen, y PostgresIT con nueve casos heredados del contrato de API. Pendiente de ejecución hasta disponer de Docker Desktop. Los 14 tests H2 de la sección anterior no validan PostgreSQL.
+Docker Compose y PostgresIT fueron ejecutados por Saul en su PowerShell local y sus resultados se incorporan como evidencia aportada por el usuario. PostgresIT completó 9 casos en 21.09 segundos; el comando Maven completo terminó en 1:23 min. Las comprobaciones de Docker y PostgreSQL son independientes de las 14 pruebas H2/seguridad.
+
+## Automatización
+
+El workflow Issueflow CI repite las pruebas en GitHub Actions. El resultado local no se presenta como una ejecución aprobada en GitHub: el estado de cada ejecución se consulta en Actions. Consulta [CI](ci.md).
