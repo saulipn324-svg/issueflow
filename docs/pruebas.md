@@ -2,13 +2,13 @@
 
 ## Resultado de esta entrega
 
-- **Backend:** 9 pruebas JUnit/MockMvc ejecutadas correctamente con H2 en memoria y migración Flyway.
+- **Backend:** 14 pruebas JUnit/MockMvc ejecutadas correctamente con H2 en memoria y migración Flyway.
 - **Demo:** 6 pruebas con Node Test Runner aprobadas.
 - **TypeScript:** comprobación estática aprobada.
 - **Integración HTTP real:** creación, búsqueda/filtros, validación, control de origen del proxy, actualización, conflicto de versión y eliminación verificados a través del servidor frontend conectado a Spring Boot.
 - **Persistencia:** se creó una incidencia, se reinició Java, se comprobó que conservaba sus datos y versión, y se eliminó el registro de prueba.
 
-El entorno aislado de Windows presentó `AccessDeniedException` en la resolución de rutas de Java y al cerrar archivos ZIP del compilador. Se pudo generar el JAR y ejecutar la aplicación. Las nueve pruebas se ejecutaron mediante JUnit Console sobre las clases compiladas; no se presenta `mvn verify` como aprobado en ese entorno. La ejecución alternativa terminó con 9/9 pruebas exitosas y un aviso del cargador de clases durante el cierre del contexto. En un entorno normal el comando previsto sigue siendo `mvn verify`.
+El entorno aislado de Windows presentó `AccessDeniedException` en la resolución de rutas de Java y al cerrar archivos ZIP del compilador. Se pudo generar el JAR y ejecutar la aplicación. Las catorce pruebas se ejecutaron mediante JUnit Console sobre las clases compiladas; no se presenta `mvn verify` como aprobado en ese entorno. La ejecución alternativa terminó con 14/14 pruebas exitosas y un aviso del cargador de clases durante el cierre del contexto. En un entorno normal el comando previsto sigue siendo `mvn verify`.
 
 ## Cobertura de los casos
 
@@ -49,3 +49,11 @@ npm run build
 No se ejecutaron pruebas visuales automatizadas en navegador, pruebas de carga, auditoría de accesibilidad ni pruebas contra PostgreSQL. No había un contexto WebMCP compatible disponible para validar su registro en navegador; la herramienta opcional no es necesaria para usar la aplicación.
 
 La demo y el backend son implementaciones de persistencia diferentes: una prueba de `localStorage` no se considera una prueba de Java o de la base de datos.
+
+## Seguridad verificada
+
+Se ejecutaron cinco pruebas adicionales de Spring Security: rechazo anónimo, contraseña incorrecta y CSRF ausente, permisos DELETE por rol, creación/edición con USER, y login real con rotación e invalidación de sesión. Además se comprobó por HTTP el recorrido proxy → Java, las cookies, los roles y el cierre de sesión. El resultado no implica pruebas de carga ni resistencia a fuerza bruta.
+
+## Docker y PostgreSQL
+
+Se añadieron Dockerfiles, Compose con healthchecks y volumen, y PostgresIT con nueve casos heredados del contrato de API. Pendiente de ejecución hasta disponer de Docker Desktop. Los 14 tests H2 de la sección anterior no validan PostgreSQL.

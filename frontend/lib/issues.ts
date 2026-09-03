@@ -76,12 +76,21 @@ export function deleteDemo(store: Store, id: number, version: number): void {
   if (row.version !== version) throw new Error('La incidencia cambió. Actualiza la lista antes de eliminarla.');
   store.setItem(STORAGE_KEY, JSON.stringify(rows.filter(x => x.id !== id)));
 }
+
 export async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const response = await fetch(`/api/backend${path}`, { ...options, headers: { 'Content-Type': 'application/json', ...options.headers } });
+  const headers = new Headers(options.headers); if (!headers.has('Content-Type')) headers.set('Content-Type','application/json');
+  if (options.method && !['GET','HEAD'].includes(options.method)) {
+    const csrfResponse = await fetch('/api/backend/auth/csrf', {cache:'no-store'});
+    if (!csrfResponse.ok) throw new Error('No se pudo preparar la sesión.');
+    const csrf = await csrfResponse.json() as {headerName:string;token:string}; headers.set(csrf.headerName, csrf.token);
+  }
+  const response = await fetch(`/api/backend${path}`, { ...options, headers, cache:'no-store' });
   if (!response.ok) {
     const body = await response.json().catch(() => ({})) as {detail?: string};
+    if (response.status === 401 && path !== '/auth/login') window.dispatchEvent(new Event('session-expired'));
     throw new Error(body.detail || 'No se pudo completar la operación. Inténtalo de nuevo.');
   }
   return response.status === 204 ? undefined as T : response.json();
 }
+
 

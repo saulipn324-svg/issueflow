@@ -9,9 +9,3 @@
 *.log
 .idea/
 .vscode/
-
-# Generated local files
-**/*.tsbuildinfo
-**/.next/
-**/bin/*.jar
-!**/.env.example

@@ -1,7 +1,10 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Issueflow · Documentación</title><style>body{margin:0;background:#f5f6f0;color:#26392b;font:16px/1.75 Arial,sans-serif}header{background:#203629;color:#e8efdc;padding:32px max(24px,calc((100% - 1000px)/2))}header a{color:inherit}nav{display:flex;gap:18px;flex-wrap:wrap;font-size:13px}main{max-width:1000px;margin:auto;padding:24px}section{padding:25px 0 40px;border-bottom:1px solid #cfd8c8;scroll-margin-top:20px}h1{font-size:32px;letter-spacing:-1px}h2{font-size:23px;margin-top:32px}h3{font-size:18px}a{color:#426b37}pre{background:#e9ede3;padding:18px;border-radius:8px;overflow:auto;font-size:13px}code{font-family:Consolas,monospace}table{border-collapse:collapse;display:block;overflow:auto;font-size:14px}td,th{padding:12px;border:1px solid #cfd8c8;text-align:left}th{background:#e9ede3}li{margin:7px 0}.top{font-size:13px;letter-spacing:1px}footer{padding:30px 24px;text-align:center;font-size:12px;color:#66775e}</style></head><body><header><p class="top">ISSUEFLOW / DOCUMENTACIÓN</p><h1>Del problema a la solución.</h1><nav><a href="/">← Volver a la aplicación</a><a href="#inicio">Inicio rápido</a><a href="#manual">Manual de usuario</a><a href="#arquitectura">Arquitectura</a><a href="#api">API REST</a><a href="#pruebas">Pruebas</a><a href="#presentacion">Cómo presentarlo</a></nav></header><main><section id="inicio"><h1>Issueflow</h1>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Issueflow · Documentación</title><style>body{margin:0;background:#f5f6f0;color:#26392b;font:16px/1.75 Arial,sans-serif}header{background:#203629;color:#e8efdc;padding:32px max(24px,calc((100% - 1000px)/2))}header a{color:inherit}nav{display:flex;gap:18px;flex-wrap:wrap;font-size:13px}main{max-width:1000px;margin:auto;padding:24px}section{padding:25px 0 40px;border-bottom:1px solid #cfd8c8;scroll-margin-top:20px}h1{font-size:32px;letter-spacing:-1px}h2{font-size:23px;margin-top:32px}h3{font-size:18px}a{color:#426b37}pre{background:#e9ede3;padding:18px;border-radius:8px;overflow:auto;font-size:13px}code{font-family:Consolas,monospace}table{border-collapse:collapse;display:block;overflow:auto;font-size:14px}td,th{padding:12px;border:1px solid #cfd8c8;text-align:left}th{background:#e9ede3}li{margin:7px 0}.top{font-size:13px;letter-spacing:1px}footer{padding:30px 24px;text-align:center;font-size:12px;color:#66775e}</style></head><body><header><p class="top">ISSUEFLOW / DOCUMENTACIÓN</p><h1>Del problema a la solución.</h1><nav><a href="/">← Volver a la aplicación</a><a href="#inicio">Inicio rápido</a><a href="#docker">Docker y PostgreSQL</a><a href="#seguridad">Seguridad y roles</a><a href="#manual">Manual de usuario</a><a href="#arquitectura">Arquitectura</a><a href="#api">API REST</a><a href="#pruebas">Pruebas</a><a href="#presentacion">Cómo presentarlo</a></nav></header><main><section id="inicio"><h1>Issueflow</h1>
 <p>Gestor de incidencias de <strong>Saul Ramos Sanchez</strong>. Permite registrar problemas, asignar responsables, definir prioridades y seguir su resolución.</p>
+<h2>Ejecutar con Docker</h2>
+<p>El entorno local con PostgreSQL y Docker Compose está preparado. Consulta <a href="#docker">Docker y PostgreSQL</a> para configurar las contraseñas, arrancar los tres servicios y ejecutar las pruebas contra PostgreSQL. La validación con Docker está pendiente de su instalación en este equipo.</p>
 <h2>Qué incluye</h2>
 <ul>
+<li>Inicio y cierre de sesión, roles ADMIN/USER y protección CSRF.</li>
 <li>Crear, consultar, editar y eliminar incidencias, con confirmación antes de eliminar.</li>
 <li>Estados: abierta, en progreso y resuelta. Se permite reabrir incidencias.</li>
 <li>Prioridades: baja, media, alta y crítica.</li>
@@ -11,6 +14,19 @@
 <li>Persistencia con H2 en archivo, migraciones Flyway y control de concurrencia optimista.</li>
 <li>Demo independiente con datos ficticios guardados en el navegador.</li>
 </ul>
+<h2>Autenticación y roles</h2>
+<p>La API usa Spring Security con sesiones de servidor. <code>admin</code> tiene rol ADMIN y <code>usuario</code> tiene rol USER. Ambos consultan, crean y editan todas las incidencias del espacio compartido; solo ADMIN elimina. No existe aislamiento por propietario. El campo responsable sigue siendo texto libre.</p>
+<p>Antes de iniciar Java, define <code>ISSUEFLOW_ADMIN_PASSWORD</code> y <code>ISSUEFLOW_USER_PASSWORD</code> con valores diferentes de al menos 12 caracteres. No hay contraseñas predeterminadas. Se aplica BCrypt con costo 12; las dos cuentas se cargan en memoria al arrancar. No se incluye registro, recuperación de contraseña ni administración de usuarios.</p>
+<p>En PowerShell 7 puedes introducirlas sin mostrarlas en pantalla:</p>
+<pre><code class="language-powershell">$env:ISSUEFLOW_ADMIN_PASSWORD = Read-Host &#39;Contraseña de admin (mínimo 12 caracteres)&#39; -MaskInput
+$env:ISSUEFLOW_USER_PASSWORD = Read-Host &#39;Contraseña de usuario (mínimo 12 caracteres)&#39; -MaskInput
+java -jar target/issueflow-1.0.0.jar
+</code></pre>
+<p>Las variables deben establecerse en la terminal donde arranca Java. Spring Boot no carga archivos <code>.env</code> automáticamente. Las contraseñas incluidas en las pruebas son exclusivamente datos de prueba.</p>
+<p>La cookie <code>ISSUEFLOW_SESSION</code> es HttpOnly y SameSite=Strict, la sesión cambia de identificador al autenticarse y caduca tras 30 minutos de inactividad. El cierre de sesión la invalida. En un despliegue HTTPS directo del backend configura <code>SESSION_COOKIE_SECURE=true</code>; el proxy aplica Secure cuando la petición entrante es HTTPS. No se guardan contraseñas ni tokens de autenticación en localStorage.</p>
+<p>Las escrituras y el login/logout requieren un token CSRF obtenido de <code>/api/auth/csrf</code>. El cliente solicita un token antes de cada escritura; el proxy solo transmite la cookie de Issueflow y el encabezado CSRF, valida el origen y no reenvía cookies de la plataforma.</p>
+<p>La demo alojada permite elegir un rol sin contraseña y guarda datos ficticios en este navegador. Los roles de esa demo son una simulación de interfaz, no una barrera de seguridad. El acceso real se valida en Java, cuyo despliegue externo sigue pendiente.</p>
+<p>Antes de exponer Java a Internet faltan límites de intentos de login, HTTPS, gestión de usuarios y operación de respaldos. Esta entrega no contrata infraestructura.</p>
 <h2>Tecnologías</h2>
 <table>
 <thead>
@@ -56,6 +72,8 @@
 <p>Terminal 1:</p>
 <pre><code class="language-powershell">cd backend
 mvn verify
+$env:ISSUEFLOW_ADMIN_PASSWORD = Read-Host &#39;Contraseña de admin (mínimo 12 caracteres)&#39; -MaskInput
+$env:ISSUEFLOW_USER_PASSWORD = Read-Host &#39;Contraseña de usuario (mínimo 12 caracteres)&#39; -MaskInput
 java -jar target/issueflow-1.0.0.jar
 </code></pre>
 <p>La API escucha por defecto en <code>http://127.0.0.1:8080</code>. Comprueba <code>http://127.0.0.1:8080/actuator/health</code>.</p>
@@ -86,6 +104,8 @@ npm run build
 <p>La compilación del frontend usa el runtime de Sites/Cloudflare. Para probar ese artefacto localmente utiliza <code>npm run start</code>; para trabajar conectado a Java, el flujo de desarrollo de arriba es el recomendado.</p>
 <h2>Documentación</h2>
 <ul>
+<li><a href="#docker">Docker y PostgreSQL</a></li>
+<li><a href="#seguridad">Seguridad y roles</a></li>
 <li><a href="#manual">Manual de usuario</a></li>
 <li><a href="#arquitectura">Arquitectura y decisiones</a></li>
 <li><a href="#api">Contrato de la API</a></li>
@@ -151,9 +171,9 @@ npm run build
 </tr>
 </tbody></table>
 <p>Los datos están en <code>backend/data/</code> si inicias Java desde <code>backend</code>. Detén la API antes de copiar esa carpeta para hacer una copia de seguridad. No subas datos locales ni contraseñas al repositorio.</p>
-<p>El driver PostgreSQL y su módulo Flyway están incluidos para una futura configuración con <code>DB_URL</code>, <code>DB_USERNAME</code> y <code>DB_PASSWORD</code>; esta entrega se valida con H2. La migración debe probarse contra PostgreSQL antes de usarlo allí.</p>
+<p>Compose configura PostgreSQL, su driver y Flyway. El perfil <code>mvn -Ppostgres verify</code> prueba la migración y el contrato con Testcontainers; su ejecución está pendiente de Docker. H2 sigue disponible para el modo local sin contenedores.</p>
 <h2>Alcance de esta versión</h2>
-<p>Es un proyecto de portafolio para uso local y demostración. No incluye autenticación, permisos por usuario, adjuntos, notificaciones ni historial de auditoría. El responsable es texto libre, no una cuenta. El backend se limita a loopback de forma predeterminada. Antes de exponerlo como servicio compartido, incorpora autenticación/autorización, HTTPS, límites de uso y operaciones de respaldo.</p>
+<p>Es un proyecto de portafolio para uso local y demostración. Incluye autenticación por sesión y autorización por rol. No incluye registro de usuarios, adjuntos, notificaciones ni historial de auditoría. El responsable es texto libre, no una cuenta. El backend se limita a loopback de forma predeterminada. Antes de exponerlo como servicio compartido, incorpora HTTPS, límites de intentos de acceso y uso y operaciones de respaldo.</p>
 <p>La demo alojada no ejecuta la JVM ni demuestra persistencia del backend: muestra la interfaz y sus interacciones. El backend Java completo se entrega en el código fuente y se ejecuta con las instrucciones anteriores.</p>
 <h2>Solución de problemas</h2>
 <ul>
@@ -166,6 +186,89 @@ npm run build
 </ul>
 <h2>JAR listo para ejecutar</h2>
 <p>El ZIP de entrega incluye <code>backend/bin/issueflow-1.0.0.jar</code>, compilado a partir de este backend y verificado mediante HTTP. Puedes iniciarlo con <code>java -jar bin/issueflow-1.0.0.jar</code> desde <code>backend/</code> si quieres probarlo antes de recompilar el código. Para desarrollar, usa el código fuente y los comandos Maven de esta guía.</p>
+</section><section id="docker"><h1>Issueflow con Docker y PostgreSQL</h1>
+<p>Este entorno local ejecuta tres servicios: frontend, API Java y PostgreSQL 17. No contrata alojamiento ni modifica la demo de Sites. Requiere Docker Desktop abierto en modo contenedores Linux y Docker Compose v2.</p>
+<h2>Primer arranque</h2>
+<p>Desde la raíz del proyecto, comprueba:</p>
+<pre><code class="language-powershell">docker version
+docker compose version
+Copy-Item .env.example .env
+</code></pre>
+<p>Edita <code>.env</code>: define <code>DB_PASSWORD</code>, <code>ISSUEFLOW_ADMIN_PASSWORD</code> e <code>ISSUEFLOW_USER_PASSWORD</code> con valores distintos. Las dos contraseñas de acceso deben tener al menos 12 caracteres. Usa valores aleatorios sin <code>$</code>, comillas ni saltos de línea para evitar interpretaciones de Compose. <code>.env</code> queda excluido de Git y de las imágenes; no compartas su contenido. No vuelvas a copiar el ejemplo sobre un <code>.env</code> ya configurado.</p>
+<pre><code class="language-powershell">docker compose config --quiet
+docker compose up --build --wait --wait-timeout 300
+docker compose ps
+</code></pre>
+<p>Abre <code>http://localhost:3000</code>. Inicia sesión con <code>admin</code> o <code>usuario</code> y la contraseña correspondiente. Si 3000 está ocupado, cambia <code>FRONTEND_PORT=3002</code> antes de arrancar y abre ese puerto. El primer build descarga imágenes y dependencias y puede tardar varios minutos.</p>
+<h2>Qué ejecuta</h2>
+<table>
+<thead>
+<tr>
+<th>Servicio</th>
+<th>Función</th>
+<th>Acceso</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>frontend</td>
+<td>Build de React/Vinext ejecutado con el emulador local de Workers de Wrangler</td>
+<td>Solo <code>127.0.0.1:3000</code> por defecto</td>
+</tr>
+<tr>
+<td>backend</td>
+<td>JAR Spring Boot 3.5 / Java 21, sesión y roles</td>
+<td>Red interna de Compose, puerto 8080</td>
+</tr>
+<tr>
+<td>db</td>
+<td>PostgreSQL 17 y volumen <code>postgres-data</code></td>
+<td>Red interna de Compose, puerto 5432</td>
+</tr>
+</tbody></table>
+<p>La API espera a que PostgreSQL esté saludable; la interfaz espera a la API. Flyway crea el esquema y Hibernate lo valida. No se importa la base H2 ni los datos de la demo automáticamente. La base de datos usa una cuenta para este entorno local; no se presenta como una configuración de mínimo privilegio lista para producción.</p>
+<p>El frontend conserva el runtime de Sites: en Docker usa Wrangler local sobre el build compilado. Es un entorno de desarrollo e integración, no una receta de hosting público. Para producción hay que definir proveedor, HTTPS, límites de acceso, gestión de secretos y usuarios, respaldos y una estrategia de ejecución compatible con Workers.</p>
+<h2>Probar permisos y persistencia</h2>
+<ol>
+<li>Entra como <code>usuario</code>, crea una incidencia y edítala. No debe aparecer Eliminar.</li>
+<li>Cierra sesión y entra como <code>admin</code>. Confirma que puedes eliminar incidencias.</li>
+<li>Crea una incidencia que quieras conservar y ejecuta <code>docker compose restart backend db</code>.</li>
+<li>Espera a que los servicios estén saludables, inicia sesión de nuevo y verifica el registro.</li>
+<li><code>docker compose down</code> detiene el entorno conservando el volumen; al volver a ejecutar <code>up</code> los datos siguen ahí.</li>
+</ol>
+<p>Las sesiones viven en memoria de Java: reiniciar la API cierra las sesiones, pero no elimina incidencias.</p>
+<h2>Pruebas de integración reales con PostgreSQL</h2>
+<p>Con Docker Desktop abierto, JDK 21 y Maven instalados:</p>
+<pre><code class="language-powershell">cd backend
+mvn -Ppostgres verify
+</code></pre>
+<p>El perfil ejecuta las pruebas habituales y <code>PostgresIT</code>, que reutiliza los nueve casos de API/persistencia con un PostgreSQL temporal de Testcontainers. Valida Flyway, CRUD, filtros, paginación y concurrencia sobre PostgreSQL. No utiliza ni borra el volumen de Compose. Si Docker no está disponible, la prueba falla; no se omite silenciosamente.</p>
+<p>El build normal de la imagen ejecuta las 14 pruebas H2/seguridad. El perfil PostgreSQL se ejecuta desde el host, porque necesita acceso al motor Docker.</p>
+<h2>Operación y diagnóstico</h2>
+<pre><code class="language-powershell">docker compose ps
+docker compose logs --tail 100 backend
+docker compose logs --tail 100 frontend
+docker compose exec db pg_isready -U issueflow -d issueflow
+docker compose down
+</code></pre>
+<p>No uses <code>down --volumes</code> para detener normalmente el proyecto: elimina los datos. Cambiar <code>DB_PASSWORD</code> en <code>.env</code> no cambia la contraseña de una base ya inicializada; debe rotarse también en PostgreSQL. Cambiar las contraseñas de las cuentas requiere recrear el backend con <code>docker compose up -d --force-recreate backend</code>.</p>
+<p>Las imágenes fijan familias de versiones, pero sus etiquetas reciben actualizaciones. Para reproducibilidad binaria estricta en producción se deben registrar digests validados.</p>
+<h2>Estado de verificación</h2>
+<p>Los Dockerfiles, Compose y el perfil PostgreSQL están preparados. La ejecución en contenedores y los nueve casos PostgreSQL están pendientes de disponer de Docker Desktop en el equipo. Las pruebas H2, seguridad e integración HTTP de la versión anterior sí se ejecutaron. No se afirma que PostgreSQL esté validado hasta completar <code>mvn -Ppostgres verify</code> y el arranque de Compose.</p>
+<p>Referencias: <a href="https://docs.docker.com/compose/how-tos/startup-order/">orden de arranque de Compose</a> e <a href="https://hub.docker.com/_/postgres">imagen oficial PostgreSQL</a>.</p>
+</section><section id="seguridad"><h1>Seguridad de Issueflow</h1>
+<h2>Autenticación y roles</h2>
+<p>La API usa Spring Security con sesiones de servidor. <code>admin</code> tiene rol ADMIN y <code>usuario</code> tiene rol USER. Ambos consultan, crean y editan todas las incidencias del espacio compartido; solo ADMIN elimina. No existe aislamiento por propietario. El campo responsable sigue siendo texto libre.</p>
+<p>Antes de iniciar Java, define <code>ISSUEFLOW_ADMIN_PASSWORD</code> y <code>ISSUEFLOW_USER_PASSWORD</code> con valores diferentes de al menos 12 caracteres. No hay contraseñas predeterminadas. Se aplica BCrypt con costo 12; las dos cuentas se cargan en memoria al arrancar. No se incluye registro, recuperación de contraseña ni administración de usuarios.</p>
+<p>En PowerShell 7 puedes introducirlas sin mostrarlas en pantalla:</p>
+<pre><code class="language-powershell">$env:ISSUEFLOW_ADMIN_PASSWORD = Read-Host &#39;Contraseña de admin (mínimo 12 caracteres)&#39; -MaskInput
+$env:ISSUEFLOW_USER_PASSWORD = Read-Host &#39;Contraseña de usuario (mínimo 12 caracteres)&#39; -MaskInput
+java -jar target/issueflow-1.0.0.jar
+</code></pre>
+<p>Las variables deben establecerse en la terminal donde arranca Java. Spring Boot no carga archivos <code>.env</code> automáticamente. Las contraseñas incluidas en las pruebas son exclusivamente datos de prueba.</p>
+<p>La cookie <code>ISSUEFLOW_SESSION</code> es HttpOnly y SameSite=Strict, la sesión cambia de identificador al autenticarse y caduca tras 30 minutos de inactividad. El cierre de sesión la invalida. En un despliegue HTTPS directo del backend configura <code>SESSION_COOKIE_SECURE=true</code>; el proxy aplica Secure cuando la petición entrante es HTTPS. No se guardan contraseñas ni tokens de autenticación en localStorage.</p>
+<p>Las escrituras y el login/logout requieren un token CSRF obtenido de <code>/api/auth/csrf</code>. El cliente solicita un token antes de cada escritura; el proxy solo transmite la cookie de Issueflow y el encabezado CSRF, valida el origen y no reenvía cookies de la plataforma.</p>
+<p>La demo alojada permite elegir un rol sin contraseña y guarda datos ficticios en este navegador. Los roles de esa demo son una simulación de interfaz, no una barrera de seguridad. El acceso real se valida en Java, cuyo despliegue externo sigue pendiente.</p>
+<p>Antes de exponer Java a Internet faltan límites de intentos de login, HTTPS, gestión de usuarios y operación de respaldos. Esta entrega no contrata infraestructura.</p>
 </section><section id="manual"><h1>Manual de usuario</h1>
 <h2>Registrar una incidencia</h2>
 <ol>
@@ -190,6 +293,9 @@ npm run build
 <li><strong>CONECTADO A SPRING BOOT:</strong> datos en el backend y su base de datos. La demo y la API tienen registros independientes.</li>
 </ul>
 <p>Las fechas se muestran en UTC para mantener un criterio consistente. La interfaz se adapta a pantallas pequeñas; la tabla se puede desplazar horizontalmente. Los formularios y diálogos ofrecen etiquetas y acciones accesibles por teclado.</p>
+<h2>Acceso al espacio</h2>
+<p>En la demo, elige Administrador o Usuario. El administrador puede eliminar y restaurar ejemplos; el usuario conserva las funciones de consulta, creación y edición. Usa Cerrar sesión para volver al selector. La selección de rol no se conserva al recargar la demo.</p>
+<p>Con Java configurado aparece un formulario de usuario y contraseña. Usa las cuentas configuradas al arrancar el backend. Al recargar se recupera la sesión vigente. Si caduca, se vuelve al acceso. Una operación rechazada no se repite automáticamente.</p>
 </section><section id="arquitectura"><h1>Arquitectura y decisiones</h1>
 <h2>Flujo completo</h2>
 <pre><code class="language-mermaid">flowchart LR
@@ -265,7 +371,7 @@ npm run build
 <p>Las peticiones de listado se cancelan al cambiar filtros para evitar que una respuesta antigua reemplace resultados recientes. Los errores de almacenamiento no provocan un borrado automático.</p>
 <h2>Límites conocidos</h2>
 <ul>
-<li>Sin autenticación ni autorización; despliegue Java pensado para desarrollo local.</li>
+<li>Spring Security: autenticación por sesión, BCrypt, CSRF y autorización por rol en cada petición. Despliegue Java todavía local.</li>
 <li>Sin auditoría histórica ni relaciones entre usuarios e incidencias.</li>
 <li>La búsqueda usa <code>LIKE</code>; para gran volumen se evaluaría búsqueda indexada específica del motor.</li>
 <li>Cuatro consultas calculan las estadísticas; no representan una instantánea atómica si hay cambios simultáneos.</li>
@@ -273,9 +379,22 @@ npm run build
 <li>Herramienta WebMCP opcional: <code>start_issue_creation</code> prepara el formulario; no guarda datos. Su disponibilidad depende del navegador.</li>
 </ul>
 <h2>Evolución propuesta</h2>
-<p>Autenticación y roles, catálogo de usuarios, historial de cambios, PostgreSQL validado, observabilidad, contenedores y CI. Cada incorporación debe resolver una necesidad concreta, con sus pruebas correspondientes.</p>
+<p>Catálogo de usuarios, historial de cambios, PostgreSQL validado, observabilidad, contenedores y CI. Cada incorporación debe resolver una necesidad concreta, con sus pruebas correspondientes.</p>
+<h2>Autenticación y roles</h2>
+<p>La API usa Spring Security con sesiones de servidor. <code>admin</code> tiene rol ADMIN y <code>usuario</code> tiene rol USER. Ambos consultan, crean y editan todas las incidencias del espacio compartido; solo ADMIN elimina. No existe aislamiento por propietario. El campo responsable sigue siendo texto libre.</p>
+<p>Antes de iniciar Java, define <code>ISSUEFLOW_ADMIN_PASSWORD</code> y <code>ISSUEFLOW_USER_PASSWORD</code> con valores diferentes de al menos 12 caracteres. No hay contraseñas predeterminadas. Se aplica BCrypt con costo 12; las dos cuentas se cargan en memoria al arrancar. No se incluye registro, recuperación de contraseña ni administración de usuarios.</p>
+<p>En PowerShell 7 puedes introducirlas sin mostrarlas en pantalla:</p>
+<pre><code class="language-powershell">$env:ISSUEFLOW_ADMIN_PASSWORD = Read-Host &#39;Contraseña de admin (mínimo 12 caracteres)&#39; -MaskInput
+$env:ISSUEFLOW_USER_PASSWORD = Read-Host &#39;Contraseña de usuario (mínimo 12 caracteres)&#39; -MaskInput
+java -jar target/issueflow-1.0.0.jar
+</code></pre>
+<p>Las variables deben establecerse en la terminal donde arranca Java. Spring Boot no carga archivos <code>.env</code> automáticamente. Las contraseñas incluidas en las pruebas son exclusivamente datos de prueba.</p>
+<p>La cookie <code>ISSUEFLOW_SESSION</code> es HttpOnly y SameSite=Strict, la sesión cambia de identificador al autenticarse y caduca tras 30 minutos de inactividad. El cierre de sesión la invalida. En un despliegue HTTPS directo del backend configura <code>SESSION_COOKIE_SECURE=true</code>; el proxy aplica Secure cuando la petición entrante es HTTPS. No se guardan contraseñas ni tokens de autenticación en localStorage.</p>
+<p>Las escrituras y el login/logout requieren un token CSRF obtenido de <code>/api/auth/csrf</code>. El cliente solicita un token antes de cada escritura; el proxy solo transmite la cookie de Issueflow y el encabezado CSRF, valida el origen y no reenvía cookies de la plataforma.</p>
+<p>La demo alojada permite elegir un rol sin contraseña y guarda datos ficticios en este navegador. Los roles de esa demo son una simulación de interfaz, no una barrera de seguridad. El acceso real se valida en Java, cuyo despliegue externo sigue pendiente.</p>
+<p>Antes de exponer Java a Internet faltan límites de intentos de login, HTTPS, gestión de usuarios y operación de respaldos. Esta entrega no contrata infraestructura.</p>
 </section><section id="api"><h1>API de Issueflow</h1>
-<p>Base local: <code>http://127.0.0.1:8080/api</code>. JSON UTF-8. La API no usa autenticación en esta versión local.</p>
+<p>Base local: <code>http://127.0.0.1:8080/api</code>. JSON UTF-8. La API requiere una sesión autenticada, salvo salud y obtención de CSRF.</p>
 <h2>Endpoints</h2>
 <table>
 <thead>
@@ -409,16 +528,26 @@ Invoke-RestMethod &quot;$base/issues/$($issue.id)?version=$($issue.version)&quot
 </code></pre>
 <p>El mapa <code>errors</code> corresponde a la validación del cuerpo. Los mensajes de Bean Validation pueden depender del idioma del entorno. No se devuelven trazas de excepción.</p>
 <p>El contrato <a href="/openapi.json">openapi.json</a> se puede importar en Postman o en un visor compatible con OpenAPI 3.1.</p>
+<h2>Sesión y CSRF</h2>
+<ol>
+<li><code>GET /auth/csrf</code>: devuelve <code>token</code> y <code>headerName</code>, y establece la cookie de sesión. Conserva la cookie.</li>
+<li><code>POST /auth/login</code>: cuerpo <code>application/x-www-form-urlencoded</code> con <code>username</code> y <code>password</code>, cookie y encabezado <code>X-CSRF-TOKEN</code>. Devuelve 204; credenciales incorrectas, 401. Conserva la nueva cookie tras la rotación de sesión.</li>
+<li><code>GET /auth/me</code>: devuelve <code>username</code> y <code>role</code>; sin sesión, 401.</li>
+<li>Antes de cada POST, PUT o DELETE solicita un CSRF actualizado y envíalo junto a la cookie. Un token ausente o inválido produce 403.</li>
+<li><code>POST /auth/logout</code>: requiere CSRF, invalida sesión y responde 204.</li>
+</ol>
+<p>Todos los endpoints de incidencias y estadísticas requieren USER o ADMIN. DELETE requiere ADMIN. Un usuario autenticado sin permiso obtiene 403. Las peticiones de lectura sin sesión obtienen 401; una escritura sin CSRF puede recibir 403 antes de evaluar la sesión.</p>
+<p>El frontend utiliza <code>/api/backend</code> como prefijo del proxy; nunca llama directamente al puerto Java desde el navegador.</p>
 </section><section id="pruebas"><h1>Pruebas y verificación</h1>
 <h2>Resultado de esta entrega</h2>
 <ul>
-<li><strong>Backend:</strong> 9 pruebas JUnit/MockMvc ejecutadas correctamente con H2 en memoria y migración Flyway.</li>
+<li><strong>Backend:</strong> 14 pruebas JUnit/MockMvc ejecutadas correctamente con H2 en memoria y migración Flyway.</li>
 <li><strong>Demo:</strong> 6 pruebas con Node Test Runner aprobadas.</li>
 <li><strong>TypeScript:</strong> comprobación estática aprobada.</li>
 <li><strong>Integración HTTP real:</strong> creación, búsqueda/filtros, validación, control de origen del proxy, actualización, conflicto de versión y eliminación verificados a través del servidor frontend conectado a Spring Boot.</li>
 <li><strong>Persistencia:</strong> se creó una incidencia, se reinició Java, se comprobó que conservaba sus datos y versión, y se eliminó el registro de prueba.</li>
 </ul>
-<p>El entorno aislado de Windows presentó <code>AccessDeniedException</code> en la resolución de rutas de Java y al cerrar archivos ZIP del compilador. Se pudo generar el JAR y ejecutar la aplicación. Las nueve pruebas se ejecutaron mediante JUnit Console sobre las clases compiladas; no se presenta <code>mvn verify</code> como aprobado en ese entorno. La ejecución alternativa terminó con 9/9 pruebas exitosas y un aviso del cargador de clases durante el cierre del contexto. En un entorno normal el comando previsto sigue siendo <code>mvn verify</code>.</p>
+<p>El entorno aislado de Windows presentó <code>AccessDeniedException</code> en la resolución de rutas de Java y al cerrar archivos ZIP del compilador. Se pudo generar el JAR y ejecutar la aplicación. Las catorce pruebas se ejecutaron mediante JUnit Console sobre las clases compiladas; no se presenta <code>mvn verify</code> como aprobado en ese entorno. La ejecución alternativa terminó con 14/14 pruebas exitosas y un aviso del cargador de clases durante el cierre del contexto. En un entorno normal el comando previsto sigue siendo <code>mvn verify</code>.</p>
 <h2>Cobertura de los casos</h2>
 <table>
 <thead>
@@ -478,6 +607,10 @@ npm run build
 <h2>Límites de validación</h2>
 <p>No se ejecutaron pruebas visuales automatizadas en navegador, pruebas de carga, auditoría de accesibilidad ni pruebas contra PostgreSQL. No había un contexto WebMCP compatible disponible para validar su registro en navegador; la herramienta opcional no es necesaria para usar la aplicación.</p>
 <p>La demo y el backend son implementaciones de persistencia diferentes: una prueba de <code>localStorage</code> no se considera una prueba de Java o de la base de datos.</p>
+<h2>Seguridad verificada</h2>
+<p>Se ejecutaron cinco pruebas adicionales de Spring Security: rechazo anónimo, contraseña incorrecta y CSRF ausente, permisos DELETE por rol, creación/edición con USER, y login real con rotación e invalidación de sesión. Además se comprobó por HTTP el recorrido proxy → Java, las cookies, los roles y el cierre de sesión. El resultado no implica pruebas de carga ni resistencia a fuerza bruta.</p>
+<h2>Docker y PostgreSQL</h2>
+<p>Se añadieron Dockerfiles, Compose con healthchecks y volumen, y PostgresIT con nueve casos heredados del contrato de API. Pendiente de ejecución hasta disponer de Docker Desktop. Los 14 tests H2 de la sección anterior no validan PostgreSQL.</p>
 </section><section id="presentacion"><h1>Cómo presentar Issueflow en una entrevista</h1>
 <h2>Resumen de 30 segundos</h2>
 <p>«Issueflow es un gestor de incidencias que desarrollé con React y TypeScript en la interfaz, y Java con Spring Boot en el backend. Implementé CRUD, filtros, paginación, validación y persistencia con migraciones. También contemplé conflictos de edición mediante versiones optimistas y pruebas de la API.»</p>
@@ -502,5 +635,7 @@ npm run build
 <h2>Qué estudiar en el código</h2>
 <p>Sigue una creación desde el formulario hasta <code>IssueController</code>, <code>IssueService</code>, <code>IssueRepository</code> y la tabla SQL. Después reproduce una edición obsoleta para entender la concurrencia optimista. Usa las pruebas como ejemplos ejecutables, y adapta este guion a lo que puedas explicar con seguridad.</p>
 <h2>Siguiente entrega razonable</h2>
-<p>Añadir autenticación y responsables reales, validar PostgreSQL y automatizar las comprobaciones en CI. Evita afirmar que esas capacidades ya están implementadas.</p>
+<p>Añadir gestión de usuarios y responsables vinculados a cuentas, validar PostgreSQL y automatizar las comprobaciones en CI. Evita afirmar que esas capacidades ya están implementadas.</p>
+<h2>Demostrar permisos</h2>
+<p>Entra como usuario, crea y edita una incidencia. Explica por qué no aparece Eliminar. Después entra como administrador y elimínala. Enseña SecurityTest: una petición DELETE directa con rol USER obtiene 403 aunque se manipule la interfaz. Explica la diferencia entre sesión de servidor, CSRF y una simulación local de roles.</p>
 </section></main><footer>Saul Ramos Sanchez · Issueflow 1.0</footer></body></html>

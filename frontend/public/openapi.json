@@ -3,7 +3,7 @@
   "info": {
     "title": "Issueflow API",
     "version": "1.0.0",
-    "description": "API local de gestión de incidencias. Sin autenticación en esta versión."
+    "description": "API de incidencias con sesión Spring Security y roles ADMIN/USER. Escrituras requieren X-CSRF-TOKEN; DELETE requiere ADMIN."
   },
   "servers": [
     {
@@ -94,6 +94,12 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Sin sesión autenticada."
+          },
+          "403": {
+            "description": "Permiso denegado o CSRF inválido."
           }
         }
       },
@@ -138,8 +144,24 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Sin sesión autenticada."
+          },
+          "403": {
+            "description": "Permiso denegado o CSRF inválido."
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/issues/{id}": {
@@ -178,6 +200,12 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Sin sesión autenticada."
+          },
+          "403": {
+            "description": "Permiso denegado o CSRF inválido."
           }
         }
       },
@@ -234,8 +262,24 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Sin sesión autenticada."
+          },
+          "403": {
+            "description": "Permiso denegado o CSRF inválido."
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       },
       "delete": {
         "operationId": "deleteIssue",
@@ -248,6 +292,14 @@
             "schema": {
               "type": "integer",
               "minimum": 0
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -284,6 +336,12 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Sin sesión autenticada."
+          },
+          "403": {
+            "description": "Permiso denegado o CSRF inválido."
           }
         }
       }
@@ -302,6 +360,109 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Sin sesión autenticada."
+          },
+          "403": {
+            "description": "Permiso denegado o CSRF inválido."
+          }
+        }
+      }
+    },
+    "/auth/csrf": {
+      "get": {
+        "summary": "Obtener token CSRF y cookie de sesión",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "token y headerName. Conservar cookie."
+          }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "summary": "Identidad actual",
+        "responses": {
+          "200": {
+            "description": "username y role (ADMIN o USER)"
+          },
+          "401": {
+            "description": "Sin sesión"
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "Iniciar sesión y rotar cookie",
+        "security": [],
+        "parameters": [
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "username",
+                  "password"
+                ],
+                "properties": {
+                  "username": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Sesión creada; conservar nueva cookie"
+          },
+          "401": {
+            "description": "Credenciales incorrectas"
+          },
+          "403": {
+            "description": "CSRF inválido"
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "summary": "Invalidar sesión",
+        "parameters": [
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Sesión cerrada"
+          },
+          "403": {
+            "description": "CSRF inválido"
           }
         }
       }
@@ -532,6 +693,18 @@
           }
         }
       }
+    },
+    "securitySchemes": {
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "ISSUEFLOW_SESSION"
+      }
     }
-  }
+  },
+  "security": [
+    {
+      "sessionCookie": []
+    }
+  ]
 }

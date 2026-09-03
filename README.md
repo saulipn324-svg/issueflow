@@ -1,11 +1,14 @@
 # Issueflow
 
-[Demo privada](https://issueflow-saul.saulipn324.chatgpt.site) · [Documentación](https://issueflow-saul.saulipn324.chatgpt.site/guia.html)
-
 Gestor de incidencias de **Saul Ramos Sanchez**. Permite registrar problemas, asignar responsables, definir prioridades y seguir su resolución.
+
+## Ejecutar con Docker
+
+El entorno local con PostgreSQL y Docker Compose está preparado. Consulta [Docker y PostgreSQL](docs/docker.md) para configurar las contraseñas, arrancar los tres servicios y ejecutar las pruebas contra PostgreSQL. La validación con Docker está pendiente de su instalación en este equipo.
 
 ## Qué incluye
 
+- Inicio y cierre de sesión, roles ADMIN/USER y protección CSRF.
 - Crear, consultar, editar y eliminar incidencias, con confirmación antes de eliminar.
 - Estados: abierta, en progreso y resuelta. Se permite reabrir incidencias.
 - Prioridades: baja, media, alta y crítica.
@@ -14,6 +17,30 @@ Gestor de incidencias de **Saul Ramos Sanchez**. Permite registrar problemas, as
 - Validación en frontend y backend; respuestas de error estructuradas.
 - Persistencia con H2 en archivo, migraciones Flyway y control de concurrencia optimista.
 - Demo independiente con datos ficticios guardados en el navegador.
+
+## Autenticación y roles
+
+La API usa Spring Security con sesiones de servidor. `admin` tiene rol ADMIN y `usuario` tiene rol USER. Ambos consultan, crean y editan todas las incidencias del espacio compartido; solo ADMIN elimina. No existe aislamiento por propietario. El campo responsable sigue siendo texto libre.
+
+Antes de iniciar Java, define `ISSUEFLOW_ADMIN_PASSWORD` y `ISSUEFLOW_USER_PASSWORD` con valores diferentes de al menos 12 caracteres. No hay contraseñas predeterminadas. Se aplica BCrypt con costo 12; las dos cuentas se cargan en memoria al arrancar. No se incluye registro, recuperación de contraseña ni administración de usuarios.
+
+En PowerShell 7 puedes introducirlas sin mostrarlas en pantalla:
+
+```powershell
+$env:ISSUEFLOW_ADMIN_PASSWORD = Read-Host 'Contraseña de admin (mínimo 12 caracteres)' -MaskInput
+$env:ISSUEFLOW_USER_PASSWORD = Read-Host 'Contraseña de usuario (mínimo 12 caracteres)' -MaskInput
+java -jar target/issueflow-1.0.0.jar
+```
+
+Las variables deben establecerse en la terminal donde arranca Java. Spring Boot no carga archivos `.env` automáticamente. Las contraseñas incluidas en las pruebas son exclusivamente datos de prueba.
+
+La cookie `ISSUEFLOW_SESSION` es HttpOnly y SameSite=Strict, la sesión cambia de identificador al autenticarse y caduca tras 30 minutos de inactividad. El cierre de sesión la invalida. En un despliegue HTTPS directo del backend configura `SESSION_COOKIE_SECURE=true`; el proxy aplica Secure cuando la petición entrante es HTTPS. No se guardan contraseñas ni tokens de autenticación en localStorage.
+
+Las escrituras y el login/logout requieren un token CSRF obtenido de `/api/auth/csrf`. El cliente solicita un token antes de cada escritura; el proxy solo transmite la cookie de Issueflow y el encabezado CSRF, valida el origen y no reenvía cookies de la plataforma.
+
+La demo alojada permite elegir un rol sin contraseña y guarda datos ficticios en este navegador. Los roles de esa demo son una simulación de interfaz, no una barrera de seguridad. El acceso real se valida en Java, cuyo despliegue externo sigue pendiente.
+
+Antes de exponer Java a Internet faltan límites de intentos de login, HTTPS, gestión de usuarios y operación de respaldos. Esta entrega no contrata infraestructura.
 
 ## Tecnologías
 
@@ -50,6 +77,8 @@ Terminal 1:
 ```powershell
 cd backend
 mvn verify
+$env:ISSUEFLOW_ADMIN_PASSWORD = Read-Host 'Contraseña de admin (mínimo 12 caracteres)' -MaskInput
+$env:ISSUEFLOW_USER_PASSWORD = Read-Host 'Contraseña de usuario (mínimo 12 caracteres)' -MaskInput
 java -jar target/issueflow-1.0.0.jar
 ```
 
@@ -95,6 +124,8 @@ La compilación del frontend usa el runtime de Sites/Cloudflare. Para probar ese
 
 ## Documentación
 
+- [Docker y PostgreSQL](docs/docker.md)
+- [Seguridad y roles](docs/seguridad.md)
 - [Manual de usuario](docs/manual.md)
 - [Arquitectura y decisiones](docs/arquitectura.md)
 - [Contrato de la API](docs/api.md)
@@ -136,11 +167,11 @@ issueflow/
 
 Los datos están en `backend/data/` si inicias Java desde `backend`. Detén la API antes de copiar esa carpeta para hacer una copia de seguridad. No subas datos locales ni contraseñas al repositorio.
 
-El driver PostgreSQL y su módulo Flyway están incluidos para una futura configuración con `DB_URL`, `DB_USERNAME` y `DB_PASSWORD`; esta entrega se valida con H2. La migración debe probarse contra PostgreSQL antes de usarlo allí.
+Compose configura PostgreSQL, su driver y Flyway. El perfil `mvn -Ppostgres verify` prueba la migración y el contrato con Testcontainers; su ejecución está pendiente de Docker. H2 sigue disponible para el modo local sin contenedores.
 
 ## Alcance de esta versión
 
-Es un proyecto de portafolio para uso local y demostración. No incluye autenticación, permisos por usuario, adjuntos, notificaciones ni historial de auditoría. El responsable es texto libre, no una cuenta. El backend se limita a loopback de forma predeterminada. Antes de exponerlo como servicio compartido, incorpora autenticación/autorización, HTTPS, límites de uso y operaciones de respaldo.
+Es un proyecto de portafolio para uso local y demostración. Incluye autenticación por sesión y autorización por rol. No incluye registro de usuarios, adjuntos, notificaciones ni historial de auditoría. El responsable es texto libre, no una cuenta. El backend se limita a loopback de forma predeterminada. Antes de exponerlo como servicio compartido, incorpora HTTPS, límites de intentos de acceso y uso y operaciones de respaldo.
 
 La demo alojada no ejecuta la JVM ni demuestra persistencia del backend: muestra la interfaz y sus interacciones. El backend Java completo se entrega en el código fuente y se ejecuta con las instrucciones anteriores.
 
@@ -155,4 +186,4 @@ La demo alojada no ejecuta la JVM ni demuestra persistencia del backend: muestra
 
 ## Generar el ejecutable
 
-El repositorio contiene el código fuente. Ejecuta `mvn verify` desde `backend/` para generar `target/issueflow-1.0.0.jar`. El JAR precompilado forma parte del ZIP de entrega original, no se versiona en Git.
+Ejecuta `mvn verify` desde `backend/` para generar el JAR. El binario precompilado se distribuye únicamente en el ZIP de entrega.

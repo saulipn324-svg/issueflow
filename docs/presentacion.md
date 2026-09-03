@@ -28,4 +28,8 @@ Sigue una creación desde el formulario hasta `IssueController`, `IssueService`,
 
 ## Siguiente entrega razonable
 
-Añadir autenticación y responsables reales, validar PostgreSQL y automatizar las comprobaciones en CI. Evita afirmar que esas capacidades ya están implementadas.
+Añadir gestión de usuarios y responsables vinculados a cuentas, validar PostgreSQL y automatizar las comprobaciones en CI. Evita afirmar que esas capacidades ya están implementadas.
+
+## Demostrar permisos
+
+Entra como usuario, crea y edita una incidencia. Explica por qué no aparece Eliminar. Después entra como administrador y elimínala. Enseña SecurityTest: una petición DELETE directa con rol USER obtiene 403 aunque se manipule la interfaz. Explica la diferencia entre sesión de servidor, CSRF y una simulación local de roles.

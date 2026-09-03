@@ -32,3 +32,9 @@ En el detalle selecciona **Eliminar** y confirma. La eliminación es permanente.
 - **CONECTADO A SPRING BOOT:** datos en el backend y su base de datos. La demo y la API tienen registros independientes.
 
 Las fechas se muestran en UTC para mantener un criterio consistente. La interfaz se adapta a pantallas pequeñas; la tabla se puede desplazar horizontalmente. Los formularios y diálogos ofrecen etiquetas y acciones accesibles por teclado.
+
+## Acceso al espacio
+
+En la demo, elige Administrador o Usuario. El administrador puede eliminar y restaurar ejemplos; el usuario conserva las funciones de consulta, creación y edición. Usa Cerrar sesión para volver al selector. La selección de rol no se conserva al recargar la demo.
+
+Con Java configurado aparece un formulario de usuario y contraseña. Usa las cuentas configuradas al arrancar el backend. Al recargar se recupera la sesión vigente. Si caduca, se vuelve al acceso. Una operación rechazada no se repite automáticamente.

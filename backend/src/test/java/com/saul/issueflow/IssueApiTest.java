@@ -10,9 +10,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import org.springframework.security.test.context.support.WithMockUser;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(classes = IssueflowApplication.class, properties = "spring.datasource.url=jdbc:h2:mem:issueflow-test;DB_CLOSE_DELAY=-1")
+@SpringBootTest(classes = IssueflowApplication.class, properties = {"spring.datasource.url=jdbc:h2:mem:issueflow-test;DB_CLOSE_DELAY=-1", "ISSUEFLOW_ADMIN_PASSWORD=TestAdmin-Only-2026", "ISSUEFLOW_USER_PASSWORD=TestUser-Only-2026"})
+@WithMockUser(roles="ADMIN")
 @AutoConfigureMockMvc
 class IssueApiTest {
     @Autowired MockMvc mvc;
@@ -26,7 +29,7 @@ class IssueApiTest {
         return body;
     }
     Map<String, Object> create(String title) throws Exception {
-        var response = mvc.perform(post("/api/issues").contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(payload(title))))
+        var response = mvc.perform(post("/api/issues").with(csrf()).contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(payload(title))))
             .andExpect(status().isCreated()).andExpect(header().exists("Location")).andReturn();
         return json.readValue(response.getResponse().getContentAsString(), new com.fasterxml.jackson.core.type.TypeReference<>() {});
     }
@@ -39,16 +42,16 @@ class IssueApiTest {
     }
     @Test void rejectsWhitespaceAndShortTitles() throws Exception {
         for (String title : List.of("   ", "ab")) {
-            mvc.perform(post("/api/issues").contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(payload(title))))
+            mvc.perform(post("/api/issues").with(csrf()).contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(payload(title))))
                 .andExpect(status().isBadRequest()).andExpect(jsonPath("$.errors.title").exists());
         }
         assertThat(repository.count()).isZero();
     }
     @Test void rejectsOversizedDescriptionAndInvalidEnum() throws Exception {
         var body = payload("Título válido"); body.put("description", "x".repeat(4001));
-        mvc.perform(post("/api/issues").contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(body))).andExpect(status().isBadRequest());
+        mvc.perform(post("/api/issues").with(csrf()).contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(body))).andExpect(status().isBadRequest());
         body.put("description", ""); body.put("status", "OTHER");
-        mvc.perform(post("/api/issues").contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(body))).andExpect(status().isBadRequest());
+        mvc.perform(post("/api/issues").with(csrf()).contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(body))).andExpect(status().isBadRequest());
         assertThat(repository.count()).isZero();
     }
     @Test void filtersPaginatesAndEscapesSearchWildcards() throws Exception {
@@ -65,21 +68,21 @@ class IssueApiTest {
     }
     @Test void updatesVersionAndRejectsStaleEdits() throws Exception {
         var issue = create("Error en reporte"); var body = payload("Reporte corregido"); body.put("version", 0); body.put("status", "RESOLVED");
-        mvc.perform(put("/api/issues/" + issue.get("id")).contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(body)))
+        mvc.perform(put("/api/issues/" + issue.get("id")).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(body)))
             .andExpect(status().isOk()).andExpect(jsonPath("$.version").value(1)).andExpect(jsonPath("$.status").value("RESOLVED"));
-        mvc.perform(put("/api/issues/" + issue.get("id")).contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(body))).andExpect(status().isConflict());
+        mvc.perform(put("/api/issues/" + issue.get("id")).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(body))).andExpect(status().isConflict());
         mvc.perform(get("/api/stats")).andExpect(jsonPath("$.resolved").value(1)).andExpect(jsonPath("$.open").value(0));
     }
     @Test void requiresVersionOnUpdateAndDelete() throws Exception {
         var issue = create("Error en formulario");
-        mvc.perform(put("/api/issues/" + issue.get("id")).contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(payload("Cambio"))))
+        mvc.perform(put("/api/issues/" + issue.get("id")).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(payload("Cambio"))))
             .andExpect(status().isBadRequest());
-        mvc.perform(delete("/api/issues/" + issue.get("id"))).andExpect(status().isBadRequest());
+        mvc.perform(delete("/api/issues/" + issue.get("id")).with(csrf())).andExpect(status().isBadRequest());
     }
     @Test void deletesAndReturnsNotFound() throws Exception {
         var issue = create("Incidencia temporal");
-        mvc.perform(delete("/api/issues/" + issue.get("id")).param("version", "7")).andExpect(status().isConflict());
-        mvc.perform(delete("/api/issues/" + issue.get("id")).param("version", "0")).andExpect(status().isNoContent());
+        mvc.perform(delete("/api/issues/" + issue.get("id")).with(csrf()).param("version", "7")).andExpect(status().isConflict());
+        mvc.perform(delete("/api/issues/" + issue.get("id")).with(csrf()).param("version", "0")).andExpect(status().isNoContent());
         mvc.perform(get("/api/issues/" + issue.get("id"))).andExpect(status().isNotFound());
         mvc.perform(get("/api/stats")).andExpect(jsonPath("$.total").value(0));
     }

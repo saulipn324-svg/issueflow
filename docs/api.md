@@ -1,6 +1,6 @@
 # API de Issueflow
 
-Base local: `http://127.0.0.1:8080/api`. JSON UTF-8. La API no usa autenticación en esta versión local.
+Base local: `http://127.0.0.1:8080/api`. JSON UTF-8. La API requiere una sesión autenticada, salvo salud y obtención de CSRF.
 
 ## Endpoints
 
@@ -104,3 +104,15 @@ Invoke-RestMethod "$base/issues/$($issue.id)?version=$($issue.version)" -Method 
 El mapa `errors` corresponde a la validación del cuerpo. Los mensajes de Bean Validation pueden depender del idioma del entorno. No se devuelven trazas de excepción.
 
 El contrato [openapi.json](openapi.json) se puede importar en Postman o en un visor compatible con OpenAPI 3.1.
+
+## Sesión y CSRF
+
+1. `GET /auth/csrf`: devuelve `token` y `headerName`, y establece la cookie de sesión. Conserva la cookie.
+2. `POST /auth/login`: cuerpo `application/x-www-form-urlencoded` con `username` y `password`, cookie y encabezado `X-CSRF-TOKEN`. Devuelve 204; credenciales incorrectas, 401. Conserva la nueva cookie tras la rotación de sesión.
+3. `GET /auth/me`: devuelve `username` y `role`; sin sesión, 401.
+4. Antes de cada POST, PUT o DELETE solicita un CSRF actualizado y envíalo junto a la cookie. Un token ausente o inválido produce 403.
+5. `POST /auth/logout`: requiere CSRF, invalida sesión y responde 204.
+
+Todos los endpoints de incidencias y estadísticas requieren USER o ADMIN. DELETE requiere ADMIN. Un usuario autenticado sin permiso obtiene 403. Las peticiones de lectura sin sesión obtienen 401; una escritura sin CSRF puede recibir 403 antes de evaluar la sesión.
+
+El frontend utiliza `/api/backend` como prefijo del proxy; nunca llama directamente al puerto Java desde el navegador.
