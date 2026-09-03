@@ -1,7 +1,9 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Issueflow · Documentación</title><style>body{margin:0;background:#f5f6f0;color:#26392b;font:16px/1.75 Arial,sans-serif}header{background:#203629;color:#e8efdc;padding:32px max(24px,calc((100% - 1000px)/2))}header a{color:inherit}nav{display:flex;gap:18px;flex-wrap:wrap;font-size:13px}main{max-width:1000px;margin:auto;padding:24px}section{padding:25px 0 40px;border-bottom:1px solid #cfd8c8;scroll-margin-top:20px}h1{font-size:32px;letter-spacing:-1px}h2{font-size:23px;margin-top:32px}h3{font-size:18px}a{color:#426b37}pre{background:#e9ede3;padding:18px;border-radius:8px;overflow:auto;font-size:13px}code{font-family:Consolas,monospace}table{border-collapse:collapse;display:block;overflow:auto;font-size:14px}td,th{padding:12px;border:1px solid #cfd8c8;text-align:left}th{background:#e9ede3}li{margin:7px 0}.top{font-size:13px;letter-spacing:1px}footer{padding:30px 24px;text-align:center;font-size:12px;color:#66775e}</style></head><body><header><p class="top">ISSUEFLOW / DOCUMENTACIÓN</p><h1>Del problema a la solución.</h1><nav><a href="/">← Volver a la aplicación</a><a href="#inicio">Inicio rápido</a><a href="#docker">Docker y PostgreSQL</a><a href="#seguridad">Seguridad y roles</a><a href="#manual">Manual de usuario</a><a href="#arquitectura">Arquitectura</a><a href="#api">API REST</a><a href="#pruebas">Pruebas</a><a href="#presentacion">Cómo presentarlo</a></nav></header><main><section id="inicio"><h1>Issueflow</h1>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Issueflow · Documentación</title><style>body{margin:0;background:#f5f6f0;color:#26392b;font:16px/1.75 Arial,sans-serif}header{background:#203629;color:#e8efdc;padding:32px max(24px,calc((100% - 1000px)/2))}header a{color:inherit}nav{display:flex;gap:18px;flex-wrap:wrap;font-size:13px}main{max-width:1000px;margin:auto;padding:24px}section{padding:25px 0 40px;border-bottom:1px solid #cfd8c8;scroll-margin-top:20px}h1{font-size:32px;letter-spacing:-1px}h2{font-size:23px;margin-top:32px}h3{font-size:18px}a{color:#426b37}pre{background:#e9ede3;padding:18px;border-radius:8px;overflow:auto;font-size:13px}code{font-family:Consolas,monospace}table{border-collapse:collapse;display:block;overflow:auto;font-size:14px}td,th{padding:12px;border:1px solid #cfd8c8;text-align:left}th{background:#e9ede3}li{margin:7px 0}.top{font-size:13px;letter-spacing:1px}footer{padding:30px 24px;text-align:center;font-size:12px;color:#66775e}</style></head><body><header><p class="top">ISSUEFLOW / DOCUMENTACIÓN</p><h1>Del problema a la solución.</h1><nav><a href="/">← Volver a la aplicación</a><a href="#inicio">Inicio rápido</a><a href="#ci">Integración continua</a><a href="#docker">Docker y PostgreSQL</a><a href="#seguridad">Seguridad y roles</a><a href="#manual">Manual de usuario</a><a href="#arquitectura">Arquitectura</a><a href="#api">API REST</a><a href="#pruebas">Pruebas</a><a href="#presentacion">Cómo presentarlo</a></nav></header><main><section id="inicio"><h1>Issueflow</h1>
 <p>Gestor de incidencias de <strong>Saul Ramos Sanchez</strong>. Permite registrar problemas, asignar responsables, definir prioridades y seguir su resolución.</p>
 <h2>Ejecutar con Docker</h2>
-<p>El entorno local con PostgreSQL y Docker Compose está preparado. Consulta <a href="#docker">Docker y PostgreSQL</a> para configurar las contraseñas, arrancar los tres servicios y ejecutar las pruebas contra PostgreSQL. La validación con Docker está pendiente de su instalación en este equipo.</p>
+<p>El entorno local con PostgreSQL y Docker Compose está preparado. Consulta <a href="#docker">Docker y PostgreSQL</a> para configurar las contraseñas, arrancar los tres servicios y ejecutar las pruebas contra PostgreSQL. El arranque, acceso por roles y persistencia tras reiniciar fueron verificados en Docker Desktop; las 9 pruebas PostgreSQL terminaron sin fallos.</p>
+<h2>Integración continua</h2>
+<p><a href="https://github.com/saulipn324-svg/issueflow/actions">GitHub Actions</a> ejecuta pruebas Java/PostgreSQL, pruebas de frontend, comprobación de tipos y compilación. Consulta <a href="#ci">el flujo CI</a> para ver activadores y resultados.</p>
 <h2>Qué incluye</h2>
 <ul>
 <li>Inicio y cierre de sesión, roles ADMIN/USER y protección CSRF.</li>
@@ -104,6 +106,7 @@ npm run build
 <p>La compilación del frontend usa el runtime de Sites/Cloudflare. Para probar ese artefacto localmente utiliza <code>npm run start</code>; para trabajar conectado a Java, el flujo de desarrollo de arriba es el recomendado.</p>
 <h2>Documentación</h2>
 <ul>
+<li><a href="#ci">Integración continua</a></li>
 <li><a href="#docker">Docker y PostgreSQL</a></li>
 <li><a href="#seguridad">Seguridad y roles</a></li>
 <li><a href="#manual">Manual de usuario</a></li>
@@ -171,7 +174,7 @@ npm run build
 </tr>
 </tbody></table>
 <p>Los datos están en <code>backend/data/</code> si inicias Java desde <code>backend</code>. Detén la API antes de copiar esa carpeta para hacer una copia de seguridad. No subas datos locales ni contraseñas al repositorio.</p>
-<p>Compose configura PostgreSQL, su driver y Flyway. El perfil <code>mvn -Ppostgres verify</code> prueba la migración y el contrato con Testcontainers; su ejecución está pendiente de Docker. H2 sigue disponible para el modo local sin contenedores.</p>
+<p>Compose configura PostgreSQL, su driver y Flyway. El perfil <code>mvn -Ppostgres verify</code> prueba la migración y el contrato con Testcontainers; su ejecución terminó con 9 pruebas aprobadas y <code>BUILD SUCCESS</code>. H2 sigue disponible para el modo local sin contenedores.</p>
 <h2>Alcance de esta versión</h2>
 <p>Es un proyecto de portafolio para uso local y demostración. Incluye autenticación por sesión y autorización por rol. No incluye registro de usuarios, adjuntos, notificaciones ni historial de auditoría. El responsable es texto libre, no una cuenta. El backend se limita a loopback de forma predeterminada. Antes de exponerlo como servicio compartido, incorpora HTTPS, límites de intentos de acceso y uso y operaciones de respaldo.</p>
 <p>La demo alojada no ejecuta la JVM ni demuestra persistencia del backend: muestra la interfaz y sus interacciones. El backend Java completo se entrega en el código fuente y se ejecuta con las instrucciones anteriores.</p>
@@ -186,6 +189,36 @@ npm run build
 </ul>
 <h2>JAR listo para ejecutar</h2>
 <p>El ZIP de entrega incluye <code>backend/bin/issueflow-1.0.0.jar</code>, compilado a partir de este backend y verificado mediante HTTP. Puedes iniciarlo con <code>java -jar bin/issueflow-1.0.0.jar</code> desde <code>backend/</code> si quieres probarlo antes de recompilar el código. Para desarrollar, usa el código fuente y los comandos Maven de esta guía.</p>
+</section><section id="ci"><h1>Integración continua</h1>
+<p>El flujo <code>.github/workflows/ci.yml</code> comprueba Issueflow con GitHub Actions al recibir pushes a <code>main</code>, pull requests hacia <code>main</code> o una ejecución manual mediante <strong>Actions → Issueflow CI → Run workflow</strong>.</p>
+<h2>Comprobaciones</h2>
+<table>
+<thead>
+<tr>
+<th>Trabajo</th>
+<th>Entorno</th>
+<th>Comandos</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Java 21 y PostgreSQL</td>
+<td>Ubuntu 24.04, Temurin 21, Docker</td>
+<td><code>mvn --batch-mode --no-transfer-progress -Ppostgres verify</code></td>
+</tr>
+<tr>
+<td>React y TypeScript</td>
+<td>Ubuntu 24.04, Node.js 24</td>
+<td><code>npm ci</code>, <code>npm run typecheck</code>, <code>npm test</code>, <code>npm run build</code></td>
+</tr>
+</tbody></table>
+<p>El backend ejecuta 14 pruebas H2/seguridad y 9 pruebas PostgreSQL con Testcontainers. La base PostgreSQL se crea temporalmente en el runner; no se conecta con la instalación local ni con el volumen de Compose. El frontend ejecuta los 6 casos de la demo y compila el build para Workers.</p>
+<p>Los trabajos se ejecutan en paralelo. Un fallo hace fallar el trabajo. Los resultados XML de Surefire/Failsafe se conservan durante 7 días en el artefacto <code>backend-test-reports</code>, incluso cuando una prueba falla. El flujo no publica sitios, imágenes ni paquetes.</p>
+<h2>Permisos y credenciales</h2>
+<p>El flujo requiere únicamente lectura del código y no utiliza secretos de producción ni el archivo <code>.env</code>. Las contraseñas ficticias de las pruebas se definen dentro de los tests. Las nuevas ejecuciones de la misma rama cancelan las anteriores para evitar trabajo duplicado; cada trabajo tiene un límite de 15 minutos.</p>
+<p>El estado verde confirma las comprobaciones de este flujo; no incluye el recorrido visual ni el reinicio del conjunto Compose, que se verificaron por separado. Para impedir merges con pruebas fallidas deben configurarse reglas de protección de rama; añadir el workflow por sí solo no las activa.</p>
+<h2>Revisar una ejecución</h2>
+<p>Abre <a href="https://github.com/saulipn324-svg/issueflow/actions">Actions de Issueflow</a>, selecciona la ejecución y revisa ambos trabajos. Si falla una prueba Java, abre los logs o descarga <code>backend-test-reports</code>. Si falla una descarga de dependencias, confirma que es un problema transitorio antes de reintentar.</p>
+<p>Referencias: <a href="https://docs.github.com/en/actions/tutorials/build-and-test-code/java-with-maven">Java con Maven</a> y <a href="https://docs.github.com/en/actions/tutorials/build-and-test-code/nodejs">Node.js</a>.</p>
 </section><section id="docker"><h1>Issueflow con Docker y PostgreSQL</h1>
 <p>Este entorno local ejecuta tres servicios: frontend, API Java y PostgreSQL 17. No contrata alojamiento ni modifica la demo de Sites. Requiere Docker Desktop abierto en modo contenedores Linux y Docker Compose v2.</p>
 <h2>Primer arranque</h2>
@@ -253,7 +286,7 @@ docker compose down
 <p>No uses <code>down --volumes</code> para detener normalmente el proyecto: elimina los datos. Cambiar <code>DB_PASSWORD</code> en <code>.env</code> no cambia la contraseña de una base ya inicializada; debe rotarse también en PostgreSQL. Cambiar las contraseñas de las cuentas requiere recrear el backend con <code>docker compose up -d --force-recreate backend</code>.</p>
 <p>Las imágenes fijan familias de versiones, pero sus etiquetas reciben actualizaciones. Para reproducibilidad binaria estricta en producción se deben registrar digests validados.</p>
 <h2>Estado de verificación</h2>
-<p>Los Dockerfiles, Compose y el perfil PostgreSQL están preparados. La ejecución en contenedores y los nueve casos PostgreSQL están pendientes de disponer de Docker Desktop en el equipo. Las pruebas H2, seguridad e integración HTTP de la versión anterior sí se ejecutaron. No se afirma que PostgreSQL esté validado hasta completar <code>mvn -Ppostgres verify</code> y el arranque de Compose.</p>
+<p>Validado en Docker Desktop por Saul: frontend, backend y PostgreSQL saludables; acceso, roles, cierre de sesión, persistencia tras reiniciar los tres servicios y eliminación por administrador aprobados. El perfil <code>mvn -Ppostgres verify</code> completó 9 pruebas PostgreSQL sin fallos, errores ni omisiones y terminó con <code>BUILD SUCCESS</code>. Estos resultados proceden de las salidas de ejecución compartidas por el usuario.</p>
 <p>Referencias: <a href="https://docs.docker.com/compose/how-tos/startup-order/">orden de arranque de Compose</a> e <a href="https://hub.docker.com/_/postgres">imagen oficial PostgreSQL</a>.</p>
 </section><section id="seguridad"><h1>Seguridad de Issueflow</h1>
 <h2>Autenticación y roles</h2>
@@ -542,6 +575,8 @@ Invoke-RestMethod &quot;$base/issues/$($issue.id)?version=$($issue.version)&quot
 <h2>Resultado de esta entrega</h2>
 <ul>
 <li><strong>Backend:</strong> 14 pruebas JUnit/MockMvc ejecutadas correctamente con H2 en memoria y migración Flyway.</li>
+<li><strong>PostgreSQL:</strong> 9 pruebas PostgresIT aprobadas, 0 fallos, 0 errores y 0 omitidas; <code>mvn -Ppostgres verify</code> terminó con <code>BUILD SUCCESS</code>, según la salida compartida por Saul el 2 de septiembre de 2026.</li>
+<li><strong>Docker Compose:</strong> los tres servicios quedaron saludables; el script verificó login, roles, cierre de sesión, persistencia tras reinicio y eliminación por ADMIN. Saul confirmó además el acceso con ambas cuentas.</li>
 <li><strong>Demo:</strong> 6 pruebas con Node Test Runner aprobadas.</li>
 <li><strong>TypeScript:</strong> comprobación estática aprobada.</li>
 <li><strong>Integración HTTP real:</strong> creación, búsqueda/filtros, validación, control de origen del proxy, actualización, conflicto de versión y eliminación verificados a través del servidor frontend conectado a Spring Boot.</li>
@@ -605,12 +640,14 @@ npm run build
 <li>Revisar el flujo por teclado y en una pantalla móvil.</li>
 </ol>
 <h2>Límites de validación</h2>
-<p>No se ejecutaron pruebas visuales automatizadas en navegador, pruebas de carga, auditoría de accesibilidad ni pruebas contra PostgreSQL. No había un contexto WebMCP compatible disponible para validar su registro en navegador; la herramienta opcional no es necesaria para usar la aplicación.</p>
+<p>No se ejecutaron pruebas visuales automatizadas en navegador, pruebas de carga, auditoría de accesibilidad . No había un contexto WebMCP compatible disponible para validar su registro en navegador; la herramienta opcional no es necesaria para usar la aplicación.</p>
 <p>La demo y el backend son implementaciones de persistencia diferentes: una prueba de <code>localStorage</code> no se considera una prueba de Java o de la base de datos.</p>
 <h2>Seguridad verificada</h2>
 <p>Se ejecutaron cinco pruebas adicionales de Spring Security: rechazo anónimo, contraseña incorrecta y CSRF ausente, permisos DELETE por rol, creación/edición con USER, y login real con rotación e invalidación de sesión. Además se comprobó por HTTP el recorrido proxy → Java, las cookies, los roles y el cierre de sesión. El resultado no implica pruebas de carga ni resistencia a fuerza bruta.</p>
 <h2>Docker y PostgreSQL</h2>
-<p>Se añadieron Dockerfiles, Compose con healthchecks y volumen, y PostgresIT con nueve casos heredados del contrato de API. Pendiente de ejecución hasta disponer de Docker Desktop. Los 14 tests H2 de la sección anterior no validan PostgreSQL.</p>
+<p>Docker Compose y PostgresIT fueron ejecutados por Saul en su PowerShell local y sus resultados se incorporan como evidencia aportada por el usuario. PostgresIT completó 9 casos en 21.09 segundos; el comando Maven completo terminó en 1:23 min. Las comprobaciones de Docker y PostgreSQL son independientes de las 14 pruebas H2/seguridad.</p>
+<h2>Automatización</h2>
+<p>El workflow Issueflow CI repite las pruebas en GitHub Actions. El resultado local no se presenta como una ejecución aprobada en GitHub: el estado de cada ejecución se consulta en Actions. Consulta <a href="#ci">CI</a>.</p>
 </section><section id="presentacion"><h1>Cómo presentar Issueflow en una entrevista</h1>
 <h2>Resumen de 30 segundos</h2>
 <p>«Issueflow es un gestor de incidencias que desarrollé con React y TypeScript en la interfaz, y Java con Spring Boot en el backend. Implementé CRUD, filtros, paginación, validación y persistencia con migraciones. También contemplé conflictos de edición mediante versiones optimistas y pruebas de la API.»</p>
