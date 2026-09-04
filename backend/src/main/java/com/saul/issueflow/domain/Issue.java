@@ -1,4 +1,7 @@
-package com.saul.issueflow;
+package com.saul.issueflow.domain;
+import com.saul.issueflow.domain.Priority;
+import com.saul.issueflow.domain.Status;
+
 
 import jakarta.persistence.*;
 import java.time.Instant;

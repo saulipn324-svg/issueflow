@@ -189,6 +189,10 @@ La demo alojada no ejecuta la JVM ni demuestra persistencia del backend: muestra
 - **Datos de demo ilegibles o almacenamiento bloqueado:** la interfaz informa el error. Restaurar ejemplos reemplaza solo los datos de Issueflow, con confirmación.
 - **AccessDeniedException de Java dentro de un entorno aislado:** ejecuta `mvn verify` en tu terminal local normal. No desactives permisos o seguridad global del equipo.
 
-## Generar el ejecutable
+## JAR listo para ejecutar
 
-Ejecuta `mvn verify` desde `backend/` para generar el JAR. El binario precompilado se distribuye únicamente en el ZIP de entrega.
+El ZIP de entrega incluye `backend/bin/issueflow-1.0.0.jar`, compilado a partir de este backend y verificado mediante HTTP. Puedes iniciarlo con `java -jar bin/issueflow-1.0.0.jar` desde `backend/` si quieres probarlo antes de recompilar el código. Para desarrollar, usa el código fuente y los comandos Maven de esta guía.
+
+## Organización del código
+
+Consulta [la arquitectura y sus decisiones](docs/ARQUITECTURA.md).

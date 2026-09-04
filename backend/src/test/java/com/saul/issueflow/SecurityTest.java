@@ -1,4 +1,5 @@
 package com.saul.issueflow;
+import com.saul.issueflow.persistence.IssueRepository;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

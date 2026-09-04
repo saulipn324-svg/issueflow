@@ -1,4 +1,5 @@
-package com.saul.issueflow;
+package com.saul.issueflow.configuration;
+
 
 import org.springframework.context.annotation.*;
 import org.springframework.beans.factory.annotation.Value;

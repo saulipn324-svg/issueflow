@@ -1,4 +1,5 @@
 package com.saul.issueflow;
+import com.saul.issueflow.persistence.IssueRepository;
 
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;

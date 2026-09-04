@@ -1,2 +1,3 @@
-package com.saul.issueflow;
+package com.saul.issueflow.domain;
+
 public enum Priority { LOW, MEDIUM, HIGH, CRITICAL }

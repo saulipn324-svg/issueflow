@@ -1,11 +1,18 @@
-package com.saul.issueflow;
+package com.saul.issueflow.application;
+import com.saul.issueflow.application.IssueRequest;
+import com.saul.issueflow.application.IssueResponse;
+import com.saul.issueflow.domain.Issue;
+import com.saul.issueflow.domain.Priority;
+import com.saul.issueflow.domain.Status;
+import com.saul.issueflow.persistence.IssueRepository;
+
 
 import org.springframework.data.domain.*;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.http.HttpStatus;
+
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
+
 import java.util.*;
 
 @Service
@@ -15,26 +22,12 @@ public class IssueService {
     public IssueService(IssueRepository repository) { this.repository = repository; }
 
     public Page<IssueResponse> list(String query, Status status, Priority priority, int page, int size) {
-        Specification<Issue> spec = (root, q, cb) -> {
-            var predicates = new ArrayList<jakarta.persistence.criteria.Predicate>();
-            if (status != null) predicates.add(cb.equal(root.get("status"), status));
-            if (priority != null) predicates.add(cb.equal(root.get("priority"), priority));
-            if (query != null && !query.isBlank()) {
-                String escaped = query.strip().toLowerCase(Locale.ROOT).replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
-                String pattern = "%" + escaped + "%";
-                predicates.add(cb.or(cb.like(cb.lower(root.get("title")), pattern, '\\'),
-                    cb.like(cb.lower(root.get("description")), pattern, '\\'),
-                    cb.like(cb.lower(root.get("assignee")), pattern, '\\')));
-            }
-            return cb.and(predicates.toArray(jakarta.persistence.criteria.Predicate[]::new));
-        };
-        return repository.findAll(spec, PageRequest.of(page, size,
-            Sort.by(Sort.Order.desc("updatedAt"), Sort.Order.desc("id")))).map(IssueResponse::from);
+        return repository.search(query, status, priority, page, size).map(IssueResponse::from);
     }
 
     public IssueResponse get(long id) { return IssueResponse.from(find(id)); }
     private Issue find(long id) {
-        return repository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "La incidencia no existe."));
+        return repository.findById(id).orElseThrow(() -> new IssueFailure(IssueFailure.Kind.NOT_FOUND, "La incidencia no existe."));
     }
     @Transactional
     public IssueResponse create(IssueRequest request) {
@@ -45,7 +38,7 @@ public class IssueService {
     @Transactional
     public IssueResponse update(long id, IssueRequest request) {
         var issue = find(id);
-        if (request.version() == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La versión es obligatoria al actualizar.");
+        if (request.version() == null) throw new IssueFailure(IssueFailure.Kind.INVALID, "La versión es obligatoria al actualizar.");
         checkVersion(issue, request.version());
         apply(issue, request);
         return IssueResponse.from(repository.saveAndFlush(issue));
@@ -58,7 +51,7 @@ public class IssueService {
         repository.flush();
     }
     private void checkVersion(Issue issue, long version) {
-        if (!Objects.equals(issue.version, version)) throw new ResponseStatusException(HttpStatus.CONFLICT,
+        if (!Objects.equals(issue.version, version)) throw new IssueFailure(IssueFailure.Kind.CONFLICT,
             "La incidencia cambió. Actualiza la lista antes de volver a intentarlo.");
     }
     private void apply(Issue issue, IssueRequest request) {

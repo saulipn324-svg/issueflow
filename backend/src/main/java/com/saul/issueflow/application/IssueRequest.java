@@ -1,4 +1,7 @@
-package com.saul.issueflow;
+package com.saul.issueflow.application;
+import com.saul.issueflow.domain.Priority;
+import com.saul.issueflow.domain.Status;
+
 
 import jakarta.validation.constraints.*;
 

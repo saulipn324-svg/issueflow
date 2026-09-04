@@ -1,4 +1,5 @@
 package com.saul.issueflow;
+import com.saul.issueflow.persistence.IssueRepository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.*;

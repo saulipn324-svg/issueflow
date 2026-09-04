@@ -1,4 +1,5 @@
-package com.saul.issueflow;
+package com.saul.issueflow.presentation;
+
 
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.*;
@@ -11,6 +12,11 @@ import java.util.LinkedHashMap;
 
 @RestControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
+    @ExceptionHandler(com.saul.issueflow.application.IssueFailure.class)
+    public ResponseEntity<ProblemDetail> business(com.saul.issueflow.application.IssueFailure ex) {
+        int status = switch (ex.kind()) { case NOT_FOUND -> 404; case INVALID -> 400; case CONFLICT -> 409; };
+        return ResponseEntity.status(status).body(ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(status), ex.getMessage()));
+    }
     @Override protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
             HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         var problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Revisa los campos de la incidencia.");
